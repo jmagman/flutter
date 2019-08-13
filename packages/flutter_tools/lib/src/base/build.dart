@@ -101,7 +101,7 @@ class AOTSnapshotter {
     }
 
     if (!_isValidAotPlatform(platform, buildMode)) {
-      printError('${getNameForTargetPlatform(platform)} does not support AOT compilation.');
+      printError('${getNameForTargetPlatform(platform)} does not support AOT compilation in build mode ${getNameForBuildMode(buildMode)}.');
       return 1;
     }
     // TODO(cbracken): replace IOSArch with TargetPlatform.ios_{armv7,arm64}.

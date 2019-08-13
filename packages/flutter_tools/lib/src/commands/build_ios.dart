@@ -12,9 +12,12 @@ import '../globals.dart';
 import '../ios/mac.dart';
 import '../runner/flutter_command.dart' show DevelopmentArtifact, FlutterCommandResult;
 import 'build.dart';
+import 'build_framework.dart';
 
 class BuildIOSCommand extends BuildSubCommand {
   BuildIOSCommand() {
+    addSubcommand(BuildFrameworkCommand(targetPlatform: TargetPlatform.ios));
+
     usesTargetOption();
     usesFlavorOption();
     usesPubOption();
