@@ -6,8 +6,10 @@ import '../../artifacts.dart';
 import '../../base/build.dart';
 import '../../base/file_system.dart';
 import '../../base/io.dart';
+import '../../base/process.dart';
 import '../../base/process_manager.dart';
 import '../../build_info.dart';
+import '../../macos/xcode.dart';
 import '../build_system.dart';
 import '../exceptions.dart';
 import 'dart.dart';
@@ -147,4 +149,90 @@ class AotAssemblyProfile extends AotAssemblyBase {
   List<Target> get dependencies => const <Target>[
     KernelSnapshot(),
   ];
+}
+
+Future<int> createAotAssembly(
+  Directory outputDirectory,
+  BuildMode buildMode,
+  bool bitcode,
+  Map<DarwinArch, Directory> outputFrameworkDirectoryByIOSArchs,
+  String mainPath,
+  String packagesPath,
+) async {
+  final AOTSnapshotter snapshotter = AOTSnapshotter(reportTimings: false);
+
+  // If we're building for a single architecture (common), then skip the lipo.
+  if (outputFrameworkDirectoryByIOSArchs.length == 1) {
+    return snapshotter.build(
+      platform: TargetPlatform.ios,
+      buildMode: buildMode,
+      mainPath: mainPath,
+      packagesPath: packagesPath,
+      outputPath: outputDirectory.path,
+      darwinArch: outputFrameworkDirectoryByIOSArchs.keys.single,
+      bitcode: bitcode,
+    );
+  } else {
+    // If we're building multiple iOS archs the binaries need to be lipo'd
+    // together.
+    final List<Future<int>> pending = <Future<int>>[];
+
+    outputFrameworkDirectoryByIOSArchs.forEach((DarwinArch iosArch, Directory outputFrameworkDirectory) {
+      if (!outputFrameworkDirectory.existsSync()) {
+        outputFrameworkDirectory.createSync(recursive: true);
+      }
+      pending.add(snapshotter.build(
+        platform: TargetPlatform.ios,
+        buildMode: buildMode,
+        mainPath: mainPath,
+        packagesPath: packagesPath,
+        outputPath: outputFrameworkDirectory.childFile('App').path,
+        darwinArch: iosArch,
+        bitcode: bitcode,
+      ));
+    });
+
+    final List<int> results = await Future.wait(pending);
+    if (results.any((int result) => result != 0)) {
+      throw Exception('AOT snapshotter exited with code ${results.join()}');
+    }
+    final ProcessResult result = await processManager.run(<String>[
+      'lipo',
+      ...outputFrameworkDirectoryByIOSArchs.values.map((Directory outputFrameworkDirectory) =>
+      outputFrameworkDirectory.childFile('App').path),
+      '-create',
+      '-output',
+      outputDirectory.childDirectory('App.framework').childFile('App').path,
+    ]);
+    return result.exitCode;
+  }
+}
+
+/// Create an App.framework for debug iOS targets.
+///
+/// This framework needs to exist for the Xcode project to link/bundle,
+/// but it isn't actually executed. To generate something valid, we compile a trivial
+/// constant.
+Future<RunResult> createIOSDebugFrameworkBinary(Directory appFrameworkDirectory) async {
+  if (!appFrameworkDirectory.existsSync()) {
+    appFrameworkDirectory.createSync(recursive: true);
+  }
+
+  final File outputFile = appFrameworkDirectory.childFile('App');
+  outputFile.createSync(recursive: true);
+  final File debugApp = fs.systemTempDirectory.createTempSync('createDebugFramework').childFile('debug_app.cc')
+    ..writeAsStringSync(r'''
+static const int Moo = 88;
+''');
+
+  return xcode.clang(<String>[
+    '-x',
+    'c',
+    debugApp.path,
+    '-dynamiclib',
+    '-Xlinker', '-rpath', '-Xlinker', '@executable_path/Frameworks',
+    '-Xlinker', '-rpath', '-Xlinker', '@loader_path/Frameworks',
+    '-install_name', '@rpath/App.framework/App',
+    '-o', outputFile.path,
+  ]);
 }
