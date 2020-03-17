@@ -209,8 +209,17 @@ abstract class DeviceManager {
   /// * If the user did not specify a device id and there is more than one
   /// device connected, then filter out unsupported devices and prioritize
   /// ephemeral devices.
-  Future<List<Device>> findTargetDevices(FlutterProject flutterProject) async {
-    List<Device> devices = await getDevices();
+  Future<List<Device>> findTargetDevices(FlutterProject flutterProject) {
+    return _findDevicesWithTimeout(flutterProject);
+  }
+
+  Future<List<Device>> _findDevicesWithTimeout(FlutterProject flutterProject, { int timeoutInSeconds }) async {
+    List<Device> devices;
+    if (timeoutInSeconds == null) {
+      devices = await getDevices();
+    } else {
+      devices = await refreshAllConnectedDevices(timeout: Duration(seconds: timeoutInSeconds));
+    }
 
     // Always remove web and fuchsia devices from `--all`. This setting
     // currently requires devices to share a frontend_server and resident
@@ -271,6 +280,16 @@ abstract class DeviceManager {
         globals.deviceManager.specifiedDeviceId = chosenDevice.id;
         devices = <Device>[chosenDevice];
       }
+    } else if (devices.isEmpty && hasSpecifiedDeviceId) {
+      // The user specified a device, but it wasn't found. Try again with a longer
+      // timeout to find networked devices or anything else that may take longer than the default.
+      const int maximumTimeout = 20;
+      final int nextTimeout = timeoutInSeconds != null ? timeoutInSeconds * 2 : 5;
+      if (nextTimeout <= maximumTimeout) {
+        globals.printTrace('No device found with ID $specifiedDeviceId, increasing discovery timeout to $nextTimeout seconds');
+        return _findDevicesWithTimeout(flutterProject, timeoutInSeconds: nextTimeout);
+      }
+
     }
     return devices;
   }
