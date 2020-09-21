@@ -19,6 +19,7 @@ import '../base/platform.dart';
 import '../base/utils.dart';
 import '../build_info.dart';
 import '../convert.dart';
+import '../devfs.dart';
 import '../device.dart';
 import '../globals.dart' as globals;
 import '../macos/xcode.dart';
@@ -198,6 +199,15 @@ class IOSDevice extends Device {
 
   @override
   bool get supportsFlutterExit => interfaceType == IOSDeviceInterface.usb;
+
+  @override
+  DevFSWriter get devFSWriter => _devFSWriter ??= IOSDeviceDevFSWriter(
+    iosDeploy: _iosDeploy,
+    deviceId: id,
+    deviceInterface: interfaceType,
+    fileSystem: _fileSystem,
+  );
+  IOSDeviceDevFSWriter _devFSWriter;
 
   @override
   final String name;
@@ -928,6 +938,60 @@ class IOSDevicePortForwarder extends DevicePortForwarder {
   Future<void> dispose() async {
     for (final ForwardedPort forwardedPort in forwardedPorts) {
       forwardedPort.dispose();
+    }
+  }
+}
+
+class IOSDeviceDevFSWriter implements DevFSWriter {
+  IOSDeviceDevFSWriter({
+    @required IOSDeploy iosDeploy,
+    @required String deviceId,
+    @required IOSDeviceInterface deviceInterface,
+    @required FileSystem fileSystem,
+  }) : _iosDeploy = iosDeploy,
+  _deviceId = deviceId,
+  _bundleId = 'io.flutter.examples.gallery',
+  _deviceInterface = deviceInterface,
+  _fileSystem = fileSystem;
+
+  final IOSDeploy _iosDeploy;
+  final String _deviceId;
+  final String _bundleId;
+  final IOSDeviceInterface _deviceInterface;
+  final FileSystem _fileSystem;
+
+  @override
+  Future<void> write(Map<Uri, DevFSContent> entries, Uri baseUri, [DevFSWriter parent]) async {
+    try {
+      for (final Uri uri in entries.keys) {
+        final DevFSContent devFSContent = entries[uri];
+        if (devFSContent is DevFSFileContent) {
+          final File content = devFSContent.file as File;
+          final String sourcePath = content.path;
+
+          // uri is relative to devFS's tmp directory, but ios-deploy needs it to be relative to the app's data
+          // container.  The devFS's tmp asset target directory is 3 levels down from the data container.
+          // Example:
+          // Data container: /private/var/mobile/Containers/Data/Application/3FC1198E-C5C8-496C-A3EE-0B3A57A2792C/
+          // devFS asset target: /private/var/mobile/Containers/Data/Application/3FC1198E-C5C8-496C-A3EE-0B3A57A2792C/tmp/flutter_galleryhfhTw5/flutter_gallery/
+          final Uri dataContainer = baseUri.resolveUri(Uri.file(_fileSystem.path.join('..', '..', '..')));
+          final String fullDestinationPath = baseUri.resolveUri(uri).path;
+          final String destinationPath = _fileSystem.path.relative(fullDestinationPath, from: dataContainer.path);
+           if (await _iosDeploy.copyFile(
+            deviceId: _deviceId,
+            bundleId: _bundleId,
+            sourcePath: sourcePath,
+            destinationPath: destinationPath,
+            interfaceType: _deviceInterface,
+          ) != 0) {
+             throw DevFSException('Failure writing $sourcePath to $destinationPath');
+           }
+          continue;
+        }
+        // Not sure how to handle non-files...
+      }
+    } on FileSystemException catch (err) {
+      throw DevFSException(err.toString());
     }
   }
 }

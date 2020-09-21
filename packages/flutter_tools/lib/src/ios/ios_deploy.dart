@@ -181,6 +181,35 @@ class IOSDeploy {
     );
   }
 
+  Future<int> copyFile({
+    @required String deviceId,
+    @required String bundleId,
+    @required String sourcePath,
+    @required String destinationPath,
+    @required IOSDeviceInterface interfaceType,
+  }) async {
+    final List<String> launchCommand = <String>[
+      _binaryPath,
+      '--id',
+      deviceId,
+      '--bundle_id',
+      bundleId,
+      '--upload',
+      sourcePath,
+      '--to',
+      destinationPath,
+      if (interfaceType != IOSDeviceInterface.network)
+        '--no-wifi',
+    ];
+
+    return _processUtils.stream(
+      launchCommand,
+      mapFunction: _monitorFailure,
+      trace: true,
+      environment: iosDeployEnv,
+    );
+  }
+
   Future<bool> isAppInstalled({
     @required String bundleId,
     @required String deviceId,
