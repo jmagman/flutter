@@ -201,13 +201,15 @@ class IOSDevice extends Device {
   bool get supportsFlutterExit => interfaceType == IOSDeviceInterface.usb;
 
   @override
-  DevFSWriter get devFSWriter => _devFSWriter ??= IOSDeviceDevFSWriter(
-    iosDeploy: _iosDeploy,
-    deviceId: id,
-    deviceInterface: interfaceType,
-    fileSystem: _fileSystem,
-  );
-  IOSDeviceDevFSWriter _devFSWriter;
+  DevFSWriter createDevFSWriter(covariant ApplicationPackage app, String userIdentifier) {
+    return IOSDeviceDevFSWriter(
+      iosDeploy: _iosDeploy,
+      deviceId: id,
+      deviceInterface: interfaceType,
+      fileSystem: _fileSystem,
+      applicationPackage: app,
+    );
+  }
 
   @override
   final String name;
@@ -948,17 +950,18 @@ class IOSDeviceDevFSWriter implements DevFSWriter {
     @required String deviceId,
     @required IOSDeviceInterface deviceInterface,
     @required FileSystem fileSystem,
+    @required ApplicationPackage applicationPackage,
   }) : _iosDeploy = iosDeploy,
-  _deviceId = deviceId,
-  _bundleId = 'io.flutter.examples.gallery',
-  _deviceInterface = deviceInterface,
-  _fileSystem = fileSystem;
+       _deviceId = deviceId,
+       _deviceInterface = deviceInterface,
+       _fileSystem = fileSystem,
+       _applicationPackage = applicationPackage;
 
   final IOSDeploy _iosDeploy;
   final String _deviceId;
-  final String _bundleId;
   final IOSDeviceInterface _deviceInterface;
   final FileSystem _fileSystem;
+  final ApplicationPackage _applicationPackage;
 
   @override
   Future<void> write(Map<Uri, DevFSContent> entries, Uri baseUri, [DevFSWriter parent]) async {
@@ -979,7 +982,7 @@ class IOSDeviceDevFSWriter implements DevFSWriter {
           final String destinationPath = _fileSystem.path.relative(fullDestinationPath, from: dataContainer.path);
            if (await _iosDeploy.copyFile(
             deviceId: _deviceId,
-            bundleId: _bundleId,
+            bundleId: _applicationPackage.id,
             sourcePath: sourcePath,
             destinationPath: destinationPath,
             interfaceType: _deviceInterface,
@@ -988,7 +991,7 @@ class IOSDeviceDevFSWriter implements DevFSWriter {
            }
           continue;
         }
-        // Not sure how to handle non-files...
+        // Handle non-files, fall back to _DevFSHttpWriter behavior somehow.
       }
     } on FileSystemException catch (err) {
       throw DevFSException(err.toString());
