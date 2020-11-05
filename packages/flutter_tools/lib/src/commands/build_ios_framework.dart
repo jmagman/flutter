@@ -380,6 +380,12 @@ end
             ? iPhoneBuildOutput
             : simulatorBuildOutput;
         frameworks.add(outputBuildDirectory.childDirectory(appFrameworkName));
+        final List<DarwinArch> archs = supportedIOSArchsForSdk(sdkType);
+        if (boolArg('universal') && sdkType == SdkType.iPhoneSimulator) {
+          globals.printError(
+              '--universal does not support ARM simulators. Building x86_64 simulator only.');
+          archs.remove(DarwinArch.arm64);
+        }
         final Environment environment = Environment(
           projectDir: globals.fs.currentDirectory,
           outputDir: outputBuildDirectory,
@@ -398,9 +404,7 @@ end
                   buildInfo.extraGenSnapshotOptions.join(','),
             if (buildInfo?.extraFrontEndOptions?.isNotEmpty ?? false)
               kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
-            kIosArchs: defaultIOSArchsForSdk(sdkType)
-                .map(getNameForDarwinArch)
-                .join(' '),
+            kIosArchs: archs.map(getNameForDarwinArch).join(' '),
             kSdkRoot: await globals.xcode.sdkLocation(sdkType),
           },
           artifacts: globals.artifacts,

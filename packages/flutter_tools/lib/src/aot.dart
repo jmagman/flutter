@@ -33,7 +33,7 @@ class AotBuilder {
     if (platform == null) {
       throwToolExit('No AOT build platform specified');
     }
-    iosBuildArchs ??= defaultIOSArchsForSdk(SdkType.iPhone);
+    iosBuildArchs ??= supportedIOSArchsForSdk(SdkType.iPhone);
     Target target;
     bool expectSo = false;
     switch (platform) {

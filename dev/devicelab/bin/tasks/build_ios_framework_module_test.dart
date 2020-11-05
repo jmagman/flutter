@@ -63,14 +63,22 @@ Future<void> main() async {
       const String outputDirectoryName = 'flutter-frameworks';
 
       await inDirectory(projectDir, () async {
-        await flutter(
+        final StringBuffer stderr = StringBuffer();
+        await evalFlutter(
           'build',
           options: <String>[
             'ios-framework',
             '--universal',
             '--output=$outputDirectoryName'
           ],
+          stderr: stderr,
         );
+
+        if (!stderr
+            .toString()
+            .contains('--universal does not support ARM simulators.')) {
+          throw TaskResult.failure('Missing ARM simulator warning');
+        }
       });
 
       final String outputPath = path.join(projectDir.path, outputDirectoryName);
@@ -341,6 +349,34 @@ Future<void> main() async {
         }
       }
 
+      section('Build ARM simulator');
+      const String armSimOutputDirectoryName = 'flutter-frameworks-arm-sim';
+
+      await inDirectory(projectDir, () async {
+        await flutter(
+          'build',
+          options: <String>[
+            'ios-framework',
+            '--no-profile',
+            '--no-release',
+            '--cocoapods',
+            '--force', // Allow podspec creation on master.
+            '--output=$armSimOutputDirectoryName'
+          ],
+        );
+      });
+
+      final String armSimOutputPath =
+          path.join(projectDir.path, armSimOutputDirectoryName);
+      checkFileExists(path.join(
+        armSimOutputPath,
+        'Debug',
+        'App.xcframework',
+        'ios-x86_64_arm64-simulator',
+        'App.framework',
+        'App',
+      ));
+
       // This builds all build modes' frameworks by default
       section('Build podspec');
 
@@ -352,7 +388,6 @@ Future<void> main() async {
           options: <String>[
             'ios-framework',
             '--cocoapods',
-            '--universal',
             '--force', // Allow podspec creation on master.
             '--output=$cocoapodsOutputDirectoryName'
           ],
@@ -370,25 +405,25 @@ Future<void> main() async {
         checkDirectoryExists(path.join(
           cocoapodsOutputPath,
           mode,
-          'App.framework',
+          'App.xcframework',
         ));
 
         checkDirectoryExists(path.join(
           cocoapodsOutputPath,
           mode,
-          'FlutterPluginRegistrant.framework',
+          'FlutterPluginRegistrant.xcframework',
         ));
 
         checkDirectoryExists(path.join(
           cocoapodsOutputPath,
           mode,
-          'device_info.framework',
+          'device_info.xcframework',
         ));
 
         checkDirectoryExists(path.join(
           cocoapodsOutputPath,
           mode,
-          'package_info.framework',
+          'package_info.xcframework',
         ));
       }
 

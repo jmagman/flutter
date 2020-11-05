@@ -473,7 +473,7 @@ enum AndroidArch {
 }
 
 /// The default set of iOS device architectures to build for.
-List<DarwinArch> defaultIOSArchsForSdk(SdkType sdkType) {
+List<DarwinArch> supportedIOSArchsForSdk(SdkType sdkType) {
   switch (sdkType) {
     case SdkType.iPhone:
       return <DarwinArch>[
@@ -482,8 +482,8 @@ List<DarwinArch> defaultIOSArchsForSdk(SdkType sdkType) {
       ];
     case SdkType.iPhoneSimulator:
       return <DarwinArch>[
-        // Apple Silicon ARM simulators not yet supported.
         DarwinArch.x86_64,
+        DarwinArch.arm64,
       ];
     default:
       assert(false, 'Unknown SDK type $sdkType');
