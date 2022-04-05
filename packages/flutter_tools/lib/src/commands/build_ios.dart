@@ -153,43 +153,36 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
 
     // Build IPA from generated xcarchive.
     final BuildableIOSApp app = await buildableIOSApp;
-    Status? status;
+    Status? ipaStatus;
     RunResult? result;
     final String relativeOutputPath = app.ipaOutputPath;
     final String absoluteOutputPath = globals.fs.path.absolute(relativeOutputPath);
     final String absoluteArchivePath = globals.fs.path.absolute(app.archiveBundleOutputPath);
     final String exportMethod = stringArg('export-method')!;
     final bool isAppStoreUpload = exportMethod  == 'app-store';
-    File? generatedExportPlist;
+
     try {
       final String exportMethodDisplayName = isAppStoreUpload ? 'App Store' : exportMethod;
-      status = globals.logger.startProgress('Building $exportMethodDisplayName IPA...');
-      String? exportOptions = exportOptionsPlist;
-      if (exportOptions == null) {
-        generatedExportPlist = _createExportPlist();
-        exportOptions = generatedExportPlist.path;
-      }
-
-      result = await globals.processUtils.run(
-        <String>[
-          ...globals.xcode!.xcrunCommand(),
-          'xcodebuild',
-          '-exportArchive',
-          if (shouldCodesign) ...<String>[
-            '-allowProvisioningDeviceRegistration',
-            '-allowProvisioningUpdates',
-          ],
-          '-archivePath',
-          absoluteArchivePath,
-          '-exportPath',
-          absoluteOutputPath,
-          '-exportOptionsPlist',
-          globals.fs.path.absolute(exportOptions),
-        ],
+      ipaStatus = globals.logger.startProgress('Building $exportMethodDisplayName IPA...');
+      result = await _buildIpa(
+        absoluteArchivePath: absoluteArchivePath,
+        absoluteOutputPath: absoluteOutputPath,
       );
     } finally {
-      generatedExportPlist?.deleteSync();
-      status?.stop();
+      ipaStatus?.stop();
+    }
+
+    if (boolArg(FlutterOptions.kAnalyzeSize)) {
+      Status? thinnedIpaStatus;
+      try {
+        thinnedIpaStatus = globals.logger.startProgress('Building thinned IPA for size analysis...');
+        await _buildIpa(
+          absoluteArchivePath: absoluteArchivePath,
+          absoluteOutputPath: absoluteOutputPath,
+        );
+      } finally {
+        thinnedIpaStatus?.stop();
+      }
     }
 
     if (result.exitCode != 0) {
@@ -235,6 +228,40 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     return FlutterCommandResult.success();
   }
 
+  Future<RunResult> _buildIpa({
+    required String absoluteArchivePath,
+    required String absoluteOutputPath,
+  }) async {
+    File? generatedExportPlist;
+    try {
+      String? exportOptions = exportOptionsPlist;
+      if (exportOptions == null) {
+        generatedExportPlist = _createExportPlist();
+        exportOptions = generatedExportPlist.path;
+      }
+
+      return globals.processUtils.run(
+        <String>[
+          ...globals.xcode!.xcrunCommand(),
+          'xcodebuild',
+          '-exportArchive',
+          if (shouldCodesign) ...<String>[
+            '-allowProvisioningDeviceRegistration',
+            '-allowProvisioningUpdates',
+          ],
+          '-archivePath',
+          absoluteArchivePath,
+          '-exportPath',
+          absoluteOutputPath,
+          '-exportOptionsPlist',
+          globals.fs.path.absolute(exportOptions),
+        ],
+      );
+    } finally {
+      generatedExportPlist?.deleteSync();
+    }
+  }
+
   File _createExportPlist() {
     // Create the plist to be passed into xcodebuild -exportOptionsPlist.
     final StringBuffer plistContents = StringBuffer('''
@@ -248,6 +275,16 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     plistContents.write('''
         <string>${stringArg('export-method')}</string>
     ''');
+    if (boolArg(FlutterOptions.kAnalyzeSize)) {
+      // Generate app thinning report.
+      plistContents.write('''
+    <key>uploadBitcode</key>
+        <false/>
+    </dict>
+</plist>
+''');
+
+    }
     if (xcodeBuildResult?.xcodeBuildExecution?.buildSettings['ENABLE_BITCODE'] != 'YES') {
       // Bitcode is off by default in Flutter iOS apps.
       plistContents.write('''
