@@ -173,15 +173,32 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     }
 
     if (boolArg(FlutterOptions.kAnalyzeSize)) {
+      final Directory thinnedIpaDirectory = globals.fs.systemTempDirectory.createTempSync('thinned_ipa_ios_size');
       Status? thinnedIpaStatus;
       try {
         thinnedIpaStatus = globals.logger.startProgress('Building thinned IPA for size analysis...');
         await _buildIpa(
           absoluteArchivePath: absoluteArchivePath,
-          absoluteOutputPath: absoluteOutputPath,
+          absoluteOutputPath: thinnedIpaDirectory.path,
+          thinning: true,
         );
+        final String appThinningPlist = thinnedIpaDirectory.childFile('app-thinning.plist').path;
+        final Map<String, Object?> plistValues = globals.plistParser.parseFile(appThinningPlist);
+        final Object? variants = plistValues['variants'] as Map<String, Object?>?;
+        if (variants is Map<String, Object?> && variants.length == 1) {
+          final Map<String, Object?>? ipaSizes = variants[variants.keys.first] as Map<String, Object?>?;
+          final Object? compressedAppSize = ipaSizes?['sizeCompressedApp'];
+          if (compressedAppSize is int) {
+            print('compressedAppSize is $compressedAppSize bytes');
+          }
+          final Object? uncompressedAppSize = ipaSizes?['sizeUncompressedApp'];
+          if (uncompressedAppSize is int) {
+            print('uncompressedAppSize is $uncompressedAppSize bytes');
+          }
+        }
       } finally {
         thinnedIpaStatus?.stop();
+        thinnedIpaDirectory.deleteSync();
       }
     }
 
@@ -231,12 +248,13 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
   Future<RunResult> _buildIpa({
     required String absoluteArchivePath,
     required String absoluteOutputPath,
+    bool thinning = false,
   }) async {
     File? generatedExportPlist;
     try {
       String? exportOptions = exportOptionsPlist;
       if (exportOptions == null) {
-        generatedExportPlist = _createExportPlist();
+        generatedExportPlist = _createExportPlist(thinning: thinning);
         exportOptions = generatedExportPlist.path;
       }
 
@@ -262,7 +280,7 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     }
   }
 
-  File _createExportPlist() {
+  File _createExportPlist({ bool thinning = false }) {
     // Create the plist to be passed into xcodebuild -exportOptionsPlist.
     final StringBuffer plistContents = StringBuffer('''
 <?xml version="1.0" encoding="UTF-8"?>
@@ -275,13 +293,11 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     plistContents.write('''
         <string>${stringArg('export-method')}</string>
     ''');
-    if (boolArg(FlutterOptions.kAnalyzeSize)) {
-      // Generate app thinning report.
+    if (thinning) {
+      // Generate app thinning report for an iPhone 12.
       plistContents.write('''
-    <key>uploadBitcode</key>
-        <false/>
-    </dict>
-</plist>
+	<key>thinning</key>
+	<string>iPhone13,2</string>
 ''');
 
     }
