@@ -173,11 +173,11 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     }
 
     if (boolArg(FlutterOptions.kAnalyzeSize)) {
-      final Directory thinnedIpaDirectory = globals.fs.systemTempDirectory.createTempSync('thinned_ipa_ios_size');
+      final Directory thinnedIpaDirectory = globals.fs.systemTempDirectory.createTempSync('thinned_ipa_ios_size.');
       Status? thinnedIpaStatus;
       try {
         thinnedIpaStatus = globals.logger.startProgress('Building thinned IPA for size analysis...');
-        await _buildIpa(
+        final RunResult thinnedResult = await _buildIpa(
           absoluteArchivePath: absoluteArchivePath,
           absoluteOutputPath: thinnedIpaDirectory.path,
           thinning: true,
