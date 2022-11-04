@@ -101,7 +101,7 @@ void main() {
 
     testWithoutContext('Null executable path fails gracefully', () async {
       final BufferLogger logger = BufferLogger.test();
-      final DesktopDevice device = setUpDesktopDevice(nullExecutablePathForDevice: true, logger: logger);
+      final DesktopDevice<FakeApplicationPackage> device = setUpDesktopDevice(nullExecutablePathForDevice: true, logger: logger);
       final FakeApplicationPackage package = FakeApplicationPackage();
       final LaunchResult result = await device.startApp(
         package,
@@ -319,7 +319,7 @@ FakeDesktopDevice setUpDesktopDevice({
 }
 
 /// A trivial subclass of DesktopDevice for testing the shared functionality.
-class FakeDesktopDevice extends DesktopDevice {
+class FakeDesktopDevice extends DesktopDevice<FakeApplicationPackage> {
   FakeDesktopDevice({
     required ProcessManager processManager,
     required Logger logger,

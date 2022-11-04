@@ -34,7 +34,7 @@ T _cast<T>(Object? object) {
 ///
 /// If [deltaFileTransfer] is true, the proxy will use an rsync-like algorithm that
 /// only transfers the changed part of the application package for deployment.
-class ProxiedDevices extends DeviceDiscovery {
+class ProxiedDevices extends DeviceDiscovery<ProxiedDevice> {
   ProxiedDevices(this.connection, {
     bool deltaFileTransfer = true,
     required Logger logger,
@@ -54,14 +54,14 @@ class ProxiedDevices extends DeviceDiscovery {
   @override
   bool get canListAnything => true;
 
-  List<Device>? _devices;
+  List<ProxiedDevice>? _devices;
 
   @override
-  Future<List<Device>> get devices async =>
+  Future<List<ProxiedDevice>> get devices async =>
       _devices ?? await discoverDevices();
 
   @override
-  Future<List<Device>> discoverDevices({Duration? timeout}) async {
+  Future<List<ProxiedDevice>> discoverDevices({Duration? timeout}) async {
     final List<Map<String, Object?>> discoveredDevices = _cast<List<dynamic>>(await connection.sendRequest('device.discoverDevices')).cast<Map<String, Object?>>();
     final List<ProxiedDevice> devices = <ProxiedDevice>[
       for (final Map<String, Object?> device in discoveredDevices)

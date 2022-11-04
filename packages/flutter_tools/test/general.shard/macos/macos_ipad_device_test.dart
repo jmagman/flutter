@@ -50,7 +50,7 @@ void main() {
       );
       expect(discoverer.supportsPlatform, isTrue);
 
-      final List<Device> devices = await discoverer.devices;
+      final List<MacOSDesignedForIPadDevice> devices = await discoverer.devices;
       expect(devices, isEmpty);
     });
 
@@ -124,10 +124,10 @@ void main() {
     expect(device.portForwarder, isNot(isNull));
     expect(await device.targetPlatform, TargetPlatform.darwin);
 
-    expect(await device.installApp(FakeApplicationPackage()), isTrue);
-    expect(await device.isAppInstalled(FakeApplicationPackage()), isTrue);
-    expect(await device.isLatestBuildInstalled(FakeApplicationPackage()), isTrue);
-    expect(await device.uninstallApp(FakeApplicationPackage()), isTrue);
+    expect(await device.installApp(FakeIOSApp()), isTrue);
+    expect(await device.isAppInstalled(FakeIOSApp()), isTrue);
+    expect(await device.isLatestBuildInstalled(FakeIOSApp()), isTrue);
+    expect(await device.uninstallApp(FakeIOSApp()), isTrue);
 
     expect(device.isSupported(), isTrue);
     expect(device.getLogReader(), isA<DesktopLogReader>());

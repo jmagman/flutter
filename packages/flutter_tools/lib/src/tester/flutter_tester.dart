@@ -250,7 +250,7 @@ class FlutterTesterDevice extends Device {
   }
 }
 
-class FlutterTesterDevices extends PollingDeviceDiscovery {
+class FlutterTesterDevices extends PollingDeviceDiscovery<FlutterTesterDevice> {
   FlutterTesterDevices({
     required FileSystem fileSystem,
     required Artifacts artifacts,
@@ -282,8 +282,8 @@ class FlutterTesterDevices extends PollingDeviceDiscovery {
   bool get supportsPlatform => true;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
-    return showFlutterTesterDevice ? <Device>[_testerDevice] : <Device>[];
+  Future<List<FlutterTesterDevice>> pollingGetDevices({ Duration? timeout }) async {
+    return showFlutterTesterDevice ? <FlutterTesterDevice>[_testerDevice] : <FlutterTesterDevice>[];
   }
 
   @override

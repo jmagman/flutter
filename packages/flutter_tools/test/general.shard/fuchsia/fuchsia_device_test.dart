@@ -110,7 +110,7 @@ void main() {
         logger: BufferLogger.test(),
       );
 
-      final Device device = (await fuchsiaDevices.pollingGetDevices()).single;
+      final FuchsiaDevice device = (await fuchsiaDevices.pollingGetDevices()).single;
 
       expect(device.name, 'paper-pulp-bush-angel');
       expect(device.id, '192.168.42.10');
@@ -129,7 +129,7 @@ void main() {
         logger: BufferLogger.test(),
       );
 
-      final List<Device> devices = await fuchsiaDevices.pollingGetDevices();
+      final List<FuchsiaDevice> devices = await fuchsiaDevices.pollingGetDevices();
 
       expect(devices.first.name, 'paper-pulp-bush-angel');
       expect(devices.first.id, '192.168.42.10');

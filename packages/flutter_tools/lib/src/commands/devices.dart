@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../application_package.dart';
 import '../base/common.dart';
 import '../base/utils.dart';
 import '../convert.dart';
@@ -62,7 +63,8 @@ class DevicesCommand extends FlutterCommand {
         exitCode: 1);
     }
 
-    final List<Device> devices = await globals.deviceManager?.refreshAllConnectedDevices(timeout: deviceDiscoveryTimeout) ?? <Device>[];
+    final List<Device<ApplicationPackage>> devices =
+        await globals.deviceManager?.refreshAllConnectedDevices(timeout: deviceDiscoveryTimeout) ?? <Device<ApplicationPackage>>[];
 
     if (boolArgDeprecated('machine')) {
       await printDevicesAsJson(devices);

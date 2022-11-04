@@ -134,11 +134,11 @@ class _FakeDeviceManager extends DeviceManager {
   _FakeDeviceManager() : super(logger: testLogger);
 
   @override
-  Future<List<Device>> getAllConnectedDevices() =>
-    Future<List<Device>>.value(fakeDevices.map((FakeDeviceJsonData d) => d.dev).toList());
+  Future<List<FakeDevice>> getAllConnectedDevices() =>
+    Future<List<FakeDevice>>.value(fakeDevices.map((FakeDeviceJsonData d) => d.dev).toList());
 
   @override
-  Future<List<Device>> refreshAllConnectedDevices({Duration? timeout}) =>
+  Future<List<FakeDevice>> refreshAllConnectedDevices({Duration? timeout}) =>
     getAllConnectedDevices();
 
   @override

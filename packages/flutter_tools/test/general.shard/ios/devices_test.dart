@@ -413,7 +413,7 @@ void main() {
 
       int addedCount = 0;
       final Completer<void> added = Completer<void>();
-      iosDevices.onAdded.listen((Device device) {
+      iosDevices.onAdded.listen((IOSDevice device) {
         addedCount++;
         // 2 devices will be added.
         // Will throw over-completion if called more than twice.
@@ -423,7 +423,7 @@ void main() {
       });
 
       final Completer<void> removed = Completer<void>();
-      iosDevices.onRemoved.listen((Device device) {
+      iosDevices.onRemoved.listen((Device<IOSApp> device) {
         // Will throw over-completion if called more than once.
         removed.complete();
       });

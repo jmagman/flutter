@@ -4,6 +4,7 @@
 
 import 'package:vm_service/vm_service.dart' as vm_service;
 
+import '../application_package.dart';
 import '../base/common.dart';
 import '../base/file_system.dart';
 import '../convert.dart';
@@ -67,7 +68,7 @@ class ScreenshotCommand extends FlutterCommand {
   @override
   final List<String> aliases = <String>['pic'];
 
-  Device? device;
+  Device<ApplicationPackage>? device;
 
   Future<void> _validateOptions(String? screenshotType, String? observatoryUrl) async {
     switch (screenshotType) {

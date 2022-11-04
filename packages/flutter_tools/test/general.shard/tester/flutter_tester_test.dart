@@ -47,7 +47,7 @@ void main() {
     testWithoutContext('no device', () async {
       final FlutterTesterDevices discoverer = setUpFlutterTesterDevices();
 
-      final List<Device> devices = await discoverer.devices;
+      final List<FlutterTesterDevice> devices = await discoverer.devices;
       expect(devices, isEmpty);
     });
 

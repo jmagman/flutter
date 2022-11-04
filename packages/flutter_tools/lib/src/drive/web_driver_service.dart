@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:webdriver/async_io.dart' as async_io;
 
+import '../application_package.dart';
 import '../base/common.dart';
 import '../base/io.dart';
 import '../base/logger.dart';
@@ -52,7 +53,7 @@ class WebDriverService extends DriverService {
   @override
   Future<void> start(
     BuildInfo buildInfo,
-    Device device,
+    Device<ApplicationPackage> device,
     DebuggingOptions debuggingOptions,
     bool ipv6, {
     File? applicationBinary,

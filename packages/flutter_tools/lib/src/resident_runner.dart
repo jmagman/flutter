@@ -75,7 +75,7 @@ class FlutterDevice {
 
   /// Create a [FlutterDevice] with optional code generation enabled.
   static Future<FlutterDevice> create(
-    Device device, {
+    Device<ApplicationPackage> device, {
     required String? target,
     required BuildInfo buildInfo,
     required Platform platform,
@@ -936,7 +936,7 @@ abstract class ResidentHandlers {
     final Map<String, Object?>? data = await vmService.getSkSLs(
       viewId: views.first.id,
     );
-    final Device device = flutterDevice.device!;
+    final Device<ApplicationPackage> device = flutterDevice.device!;
     return sharedSkSlWriter(device, data);
   }
 

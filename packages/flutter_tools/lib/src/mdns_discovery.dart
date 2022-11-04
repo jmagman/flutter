@@ -5,6 +5,7 @@
 import 'package:meta/meta.dart';
 import 'package:multicast_dns/multicast_dns.dart';
 
+import 'application_package.dart';
 import 'base/common.dart';
 import 'base/context.dart';
 import 'base/io.dart';
@@ -145,7 +146,7 @@ class MDnsObservatoryDiscovery {
     }
   }
 
-  Future<Uri?> getObservatoryUri(String? applicationId, Device device, {
+  Future<Uri?> getObservatoryUri(String? applicationId, Device<ApplicationPackage> device, {
     bool usesIpv6 = false,
     int? hostVmservicePort,
     int? deviceVmservicePort,

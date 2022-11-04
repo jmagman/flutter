@@ -157,7 +157,7 @@ void main() {
           fakeLogReader.addLine('The Dart VM service is listening on http://127.0.0.1:$devicePort');
           return fakeLogReader;
         };
-        testDeviceManager.devices = <Device>[device];
+        testDeviceManager.devices = <FakeAndroidDevice>[device];
         final Completer<void> completer = Completer<void>();
         final StreamSubscription<String> loggerSubscription = logger.stream.listen((String message) {
           if (message == '[verbose] Observatory URL on device: http://127.0.0.1:$devicePort') {

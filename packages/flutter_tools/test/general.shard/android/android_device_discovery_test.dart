@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:file/memory.dart';
+import 'package:flutter_tools/src/android/android_device.dart';
 import 'package:flutter_tools/src/android/android_device_discovery.dart';
 import 'package:flutter_tools/src/android/android_sdk.dart';
 import 'package:flutter_tools/src/android/android_workflow.dart';
@@ -147,7 +148,7 @@ List of devices attached
       fileSystem: MemoryFileSystem.test(),
     );
 
-    final List<Device> devices = await androidDevices.pollingGetDevices();
+    final List<AndroidDevice> devices = await androidDevices.pollingGetDevices();
 
     expect(devices, hasLength(1));
     expect(devices.first.name, 'Nexus 7');

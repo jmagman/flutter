@@ -260,7 +260,7 @@ void main() {
 
   testUsingContext('WebDriverService forwards exception when run future fails before app starts', () async {
     final WebDriverService service = setUpDriverService();
-    final Device device = FakeDevice();
+    final FakeDevice device = FakeDevice();
     await expectLater(
       service.start(BuildInfo.profile, device, DebuggingOptions.enabled(BuildInfo.profile), true),
       throwsA('This is a test error'),

@@ -18,7 +18,7 @@ import 'build_linux.dart';
 import 'linux_workflow.dart';
 
 /// A device that represents a desktop Linux target.
-class LinuxDevice extends DesktopDevice {
+class LinuxDevice extends DesktopDevice<LinuxApp> {
   LinuxDevice({
     required ProcessManager processManager,
     required Logger logger,
@@ -75,7 +75,7 @@ class LinuxDevice extends DesktopDevice {
   }
 }
 
-class LinuxDevices extends PollingDeviceDiscovery {
+class LinuxDevices extends PollingDeviceDiscovery<LinuxDevice> {
   LinuxDevices({
     required Platform platform,
     required FeatureFlags featureFlags,
@@ -108,11 +108,11 @@ class LinuxDevices extends PollingDeviceDiscovery {
   bool get canListAnything => _linuxWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<LinuxDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (!canListAnything) {
-      return const <Device>[];
+      return const <LinuxDevice>[];
     }
-    return <Device>[
+    return <LinuxDevice>[
       LinuxDevice(
         logger: _logger,
         processManager: _processManager,

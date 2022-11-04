@@ -33,7 +33,7 @@ class WebApplicationPackage extends ApplicationPackage {
 }
 
 /// A web device that supports a chromium browser.
-abstract class ChromiumDevice extends Device {
+abstract class ChromiumDevice extends Device<WebApplicationPackage> {
   ChromiumDevice({
     required String name,
     required this.chromeLauncher,
@@ -83,7 +83,7 @@ abstract class ChromiumDevice extends Device {
 
   @override
   DeviceLogReader getLogReader({
-    ApplicationPackage? app,
+    WebApplicationPackage? app,
     bool includePastLogs = false,
   }) {
     return _logReader ??= NoOpDeviceLogReader(app?.name);
@@ -91,18 +91,18 @@ abstract class ChromiumDevice extends Device {
 
   @override
   Future<bool> installApp(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async => true;
 
   @override
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async => true;
 
   @override
-  Future<bool> isLatestBuildInstalled(ApplicationPackage app) async => true;
+  Future<bool> isLatestBuildInstalled(WebApplicationPackage app) async => true;
 
   @override
   Future<bool> get isLocalEmulator async => false;
@@ -158,7 +158,7 @@ abstract class ChromiumDevice extends Device {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    WebApplicationPackage? app, {
     String? userIdentifier,
   }) async {
     await _chrome?.close();
@@ -170,7 +170,7 @@ abstract class ChromiumDevice extends Device {
 
   @override
   Future<bool> uninstallApp(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async => true;
 
@@ -293,7 +293,7 @@ class MicrosoftEdgeDevice extends ChromiumDevice {
   }
 }
 
-class WebDevices extends PollingDeviceDiscovery {
+class WebDevices extends PollingDeviceDiscovery<Device<WebApplicationPackage>> {
   WebDevices({
     required FileSystem fileSystem,
     required Logger logger,
@@ -351,12 +351,12 @@ class WebDevices extends PollingDeviceDiscovery {
   bool get canListAnything => featureFlags.isWebEnabled;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<Device<WebApplicationPackage>>> pollingGetDevices({ Duration? timeout }) async {
     if (!_featureFlags.isWebEnabled) {
-      return <Device>[];
+      return <WebServerDevice>[];
     }
     final MicrosoftEdgeDevice? edgeDevice = _edgeDevice;
-    return <Device>[
+    return <Device<WebApplicationPackage>>[
       if (WebServerDevice.showWebServerDevice)
         _webServerDevice,
       if (_chromeDevice.isSupported())
@@ -380,7 +380,7 @@ String parseVersionForWindows(String input) {
 
 
 /// A special device type to allow serving for arbitrary browsers.
-class WebServerDevice extends Device {
+class WebServerDevice extends Device<WebApplicationPackage> {
   WebServerDevice({
     required Logger logger,
   }) : _logger = logger,
@@ -406,7 +406,7 @@ class WebServerDevice extends Device {
 
   @override
   DeviceLogReader getLogReader({
-    ApplicationPackage? app,
+    WebApplicationPackage? app,
     bool includePastLogs = false,
   }) {
     return _logReader ??= NoOpDeviceLogReader(app?.name);
@@ -414,18 +414,18 @@ class WebServerDevice extends Device {
 
   @override
   Future<bool> installApp(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async => true;
 
   @override
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async => true;
 
   @override
-  Future<bool> isLatestBuildInstalled(ApplicationPackage app) async => true;
+  Future<bool> isLatestBuildInstalled(WebApplicationPackage app) async => true;
 
   @override
   bool get supportsFlutterExit => false;
@@ -479,7 +479,7 @@ class WebServerDevice extends Device {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    WebApplicationPackage? app, {
     String? userIdentifier,
   }) async {
     return true;
@@ -490,7 +490,7 @@ class WebServerDevice extends Device {
 
   @override
   Future<bool> uninstallApp(
-    ApplicationPackage app, {
+    WebApplicationPackage app, {
     String? userIdentifier,
   }) async {
     return true;

@@ -30,7 +30,7 @@ import 'ios_workflow.dart';
 import 'iproxy.dart';
 import 'mac.dart';
 
-class IOSDevices extends PollingDeviceDiscovery {
+class IOSDevices extends PollingDeviceDiscovery<IOSDevice> {
   IOSDevices({
     required Platform platform,
     required XCDevice xcdevice,
@@ -66,7 +66,7 @@ class IOSDevices extends PollingDeviceDiscovery {
       return;
     }
 
-    deviceNotifier ??= ItemListNotifier<Device>();
+    deviceNotifier ??= ItemListNotifier<IOSDevice>();
 
     // Start by populating all currently attached devices.
     deviceNotifier!.updateWithNewList(await pollingGetDevices());
@@ -91,12 +91,12 @@ class IOSDevices extends PollingDeviceDiscovery {
   Future<void> _onDeviceEvent(Map<XCDeviceEvent, String> event) async {
     final XCDeviceEvent eventType = event.containsKey(XCDeviceEvent.attach) ? XCDeviceEvent.attach : XCDeviceEvent.detach;
     final String? deviceIdentifier = event[eventType];
-    final ItemListNotifier<Device>? notifier = deviceNotifier;
+    final ItemListNotifier<IOSDevice>? notifier = deviceNotifier;
     if (notifier == null) {
       return;
     }
-    Device? knownDevice;
-    for (final Device device in notifier.items) {
+    IOSDevice? knownDevice;
+    for (final IOSDevice device in notifier.items) {
       if (device.id == deviceIdentifier) {
         knownDevice = device;
       }
@@ -106,7 +106,7 @@ class IOSDevices extends PollingDeviceDiscovery {
     if (eventType == XCDeviceEvent.attach && knownDevice == null) {
       // There's no way to get details for an individual attached device,
       // so repopulate them all.
-      final List<Device> devices = await pollingGetDevices();
+      final List<IOSDevice> devices = await pollingGetDevices();
       notifier.updateWithNewList(devices);
     } else if (eventType == XCDeviceEvent.detach && knownDevice != null) {
       notifier.removeItem(knownDevice);
@@ -119,7 +119,7 @@ class IOSDevices extends PollingDeviceDiscovery {
   }
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<IOSDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (!_platform.isMacOS) {
       throw UnsupportedError(
         'Control of iOS devices or simulators only supported on macOS.'
@@ -144,7 +144,7 @@ class IOSDevices extends PollingDeviceDiscovery {
   List<String> get wellKnownIds => const <String>[];
 }
 
-class IOSDevice extends Device {
+class IOSDevice extends Device<IOSApp> {
   IOSDevice(super.id, {
     required FileSystem fileSystem,
     required this.name,

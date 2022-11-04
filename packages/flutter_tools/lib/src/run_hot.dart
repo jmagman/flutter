@@ -11,6 +11,7 @@ import 'package:package_config/package_config.dart';
 import 'package:pool/pool.dart';
 import 'package:vm_service/vm_service.dart' as vm_service;
 
+import 'application_package.dart';
 import 'base/context.dart';
 import 'base/file_system.dart';
 import 'base/logger.dart';
@@ -141,7 +142,7 @@ class HotRunner extends ResidentRunner {
     }
 
     if (flutterDevices.length == 1) {
-      final Device device = flutterDevices.first.device!;
+      final Device<ApplicationPackage> device = flutterDevices.first.device!;
       _targetPlatform = getNameForTargetPlatform(await device.targetPlatform);
       _sdkName = await device.sdkNameAndVersion;
       _emulator = await device.isLocalEmulator;

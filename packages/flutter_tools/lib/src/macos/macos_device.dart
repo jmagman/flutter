@@ -18,7 +18,7 @@ import 'build_macos.dart';
 import 'macos_workflow.dart';
 
 /// A device that represents a desktop MacOS target.
-class MacOSDevice extends DesktopDevice {
+class MacOSDevice extends DesktopDevice<MacOSApp> {
   MacOSDevice({
     required ProcessManager processManager,
     required Logger logger,
@@ -103,7 +103,7 @@ class MacOSDevice extends DesktopDevice {
   }
 }
 
-class MacOSDevices extends PollingDeviceDiscovery {
+class MacOSDevices extends PollingDeviceDiscovery<MacOSDevice> {
   MacOSDevices({
     required Platform platform,
     required MacOSWorkflow macOSWorkflow,
@@ -133,11 +133,11 @@ class MacOSDevices extends PollingDeviceDiscovery {
   bool get canListAnything => _macOSWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<MacOSDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (!canListAnything) {
-      return const <Device>[];
+      return const <MacOSDevice>[];
     }
-    return <Device>[
+    return <MacOSDevice>[
       MacOSDevice(
         processManager: _processManager,
         logger: _logger,

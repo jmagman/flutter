@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
+import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/signals.dart';
@@ -1363,7 +1364,7 @@ class FakeResidentDevtoolsHandler extends Fake implements ResidentDevtoolsHandle
 // Unfortunately Device, despite not being immutable, has an `operator ==`.
 // Until we fix that, we have to also ignore related lints here.
 // ignore: avoid_implementing_value_types
-class FakeDevice extends Fake implements Device {
+class FakeDevice extends Fake implements Device<ApplicationPackage> {
   @override
   bool isSupported() => true;
 

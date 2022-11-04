@@ -51,7 +51,7 @@ Future<FlutterVmService> _kDefaultFuchsiaIsolateDiscoveryConnector(Uri uri) {
 }
 
 Future<void> _kDefaultDartDevelopmentServiceStarter(
-  Device device,
+  FuchsiaDevice device,
   Uri observatoryUri,
   bool disableServiceAuthCodes,
 ) async {
@@ -152,7 +152,7 @@ class _FuchsiaLogSink implements EventSink<String> {
 }
 
 /// Device discovery for Fuchsia devices.
-class FuchsiaDevices extends PollingDeviceDiscovery {
+class FuchsiaDevices extends PollingDeviceDiscovery<FuchsiaDevice> {
   FuchsiaDevices({
     required Platform platform,
     required FuchsiaWorkflow fuchsiaWorkflow,
@@ -176,16 +176,16 @@ class FuchsiaDevices extends PollingDeviceDiscovery {
   bool get canListAnything => _fuchsiaWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<FuchsiaDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (!_fuchsiaWorkflow.canListDevices) {
-      return <Device>[];
+      return <FuchsiaDevice>[];
     }
     // TODO(omerlevran): Remove once soft transition is complete fxb/67602.
     final List<String>? text = (await _fuchsiaSdk.listDevices(
       timeout: timeout,
     ))?.split('\n');
     if (text == null || text.isEmpty) {
-      return <Device>[];
+      return <FuchsiaDevice>[];
     }
     final List<FuchsiaDevice> devices = <FuchsiaDevice>[];
     for (final String line in text) {
@@ -223,7 +223,8 @@ class FuchsiaDevices extends PollingDeviceDiscovery {
   List<String> get wellKnownIds => const <String>[];
 }
 
-class FuchsiaDevice extends Device {
+// Device<FuchsiaApp or FuchsiaModulePackage>
+class FuchsiaDevice extends Device<ApplicationPackage> {
   FuchsiaDevice(super.id, {required this.name})
       : super(
           platformType: PlatformType.fuchsia,
@@ -754,7 +755,7 @@ class FuchsiaIsolateDiscoveryProtocol {
   final String _isolateName;
   final Completer<Uri> _foundUri = Completer<Uri>();
   final Future<FlutterVmService> Function(Uri) _vmServiceConnector;
-  final Future<void> Function(Device, Uri, bool) _ddsStarter;
+  final Future<void> Function(FuchsiaDevice, Uri, bool) _ddsStarter;
   // whether to only poll once.
   final bool _pollOnce;
   Timer? _pollingTimer;

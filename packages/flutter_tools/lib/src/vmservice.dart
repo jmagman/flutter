@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:meta/meta.dart' show visibleForTesting;
 import 'package:vm_service/vm_service.dart' as vm_service;
 
+import 'application_package.dart';
 import 'base/common.dart';
 import 'base/context.dart';
 import 'base/io.dart' as io;
@@ -167,7 +168,7 @@ typedef VMServiceConnector = Future<FlutterVmService> Function(Uri httpUri, {
   GetSkSLMethod? getSkSLMethod,
   PrintStructuredErrorLogMethod? printStructuredErrorLogMethod,
   io.CompressionOptions compression,
-  Device? device,
+  Device<ApplicationPackage>? device,
   required Logger logger,
 });
 

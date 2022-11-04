@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../application_package.dart';
 import '../artifacts.dart';
 import '../base/common.dart';
 import '../base/file_system.dart';
@@ -50,7 +51,7 @@ abstract class FlutterTestRunner {
     bool runSkipped = false,
     int? shardIndex,
     int? totalShards,
-    Device? integrationTestDevice,
+    Device<ApplicationPackage>? integrationTestDevice,
     String? integrationTestUserIdentifier,
     TestTimeRecorder? testTimeRecorder,
   });

@@ -446,7 +446,7 @@ class FakeResidentRunner extends Fake implements ResidentRunner {
 
 class FakeFlutterDevice extends Fake implements FlutterDevice {
   @override
-  final Device device = FakeDevice();
+  final FakeDevice device = FakeDevice();
 
   @override
   FlutterVmService? vmService;

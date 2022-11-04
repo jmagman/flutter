@@ -57,7 +57,7 @@ List<FakeDeviceJsonData> fakeDevices = <FakeDeviceJsonData>[
 ];
 
 /// Fake device to test `devices` command.
-class FakeDevice extends Device {
+class FakeDevice extends Device<ApplicationPackage> {
   FakeDevice(this.name, String id, {
     bool ephemeral = true,
     bool isSupported = true,

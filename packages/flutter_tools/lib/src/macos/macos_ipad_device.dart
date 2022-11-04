@@ -14,13 +14,15 @@ import '../base/platform.dart';
 import '../build_info.dart';
 import '../desktop_device.dart';
 import '../device.dart';
+import '../ios/application_package.dart';
 import '../ios/ios_workflow.dart';
 import '../project.dart';
+import 'macos_device.dart';
 
 /// Represents an ARM macOS target that can run iPad apps.
 ///
 /// https://developer.apple.com/documentation/apple-silicon/running-your-ios-apps-on-macos
-class MacOSDesignedForIPadDevice extends DesktopDevice {
+class MacOSDesignedForIPadDevice extends DesktopDevice<IOSApp> {
   MacOSDesignedForIPadDevice({
     required ProcessManager processManager,
     required Logger logger,
@@ -73,7 +75,7 @@ class MacOSDesignedForIPadDevice extends DesktopDevice {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    IOSApp? app, {
     String? userIdentifier,
   }) async => false;
 
@@ -87,7 +89,7 @@ class MacOSDesignedForIPadDevice extends DesktopDevice {
   }
 }
 
-class MacOSDesignedForIPadDevices extends PollingDeviceDiscovery {
+class MacOSDesignedForIPadDevices extends PollingDeviceDiscovery<MacOSDesignedForIPadDevice> {
   MacOSDesignedForIPadDevices({
     required Platform platform,
     required IOSWorkflow iosWorkflow,
@@ -123,11 +125,11 @@ class MacOSDesignedForIPadDevices extends PollingDeviceDiscovery {
   static bool allowDiscovery = false;
 
   @override
-  Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
+  Future<List<MacOSDesignedForIPadDevice>> pollingGetDevices({Duration? timeout}) async {
     if (!canListAnything) {
-      return const <Device>[];
+      return const <MacOSDesignedForIPadDevice>[];
     }
-    return <Device>[
+    return <MacOSDesignedForIPadDevice>[
       MacOSDesignedForIPadDevice(
         processManager: _processManager,
         logger: _logger,

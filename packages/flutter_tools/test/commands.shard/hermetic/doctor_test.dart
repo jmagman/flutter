@@ -149,7 +149,7 @@ void main() {
       testWithoutContext('diagnostic message and devices', () async {
         final FakeDevice device = FakeDevice();
         final FakeDeviceManager deviceManager = FakeDeviceManager()
-          ..devices = <Device>[device]
+          ..devices = <FakeDevice>[device]
           ..diagnostics = <String>['Device locked'];
 
         final DeviceValidator deviceValidator = DeviceValidator(
@@ -1187,12 +1187,12 @@ class VsCodeValidatorTestTargets extends VsCodeValidator {
   static final String missingExtensions = globals.fs.path.join('test', 'data', 'vscode', 'notExtensions');
 }
 
-class FakeDeviceManager extends Fake implements DeviceManager {
+class FakeDeviceManager extends Fake implements DeviceManager<FakeDevice> {
   List<String> diagnostics = <String>[];
-  List<Device> devices = <Device>[];
+  List<FakeDevice> devices = <FakeDevice>[];
 
   @override
-  Future<List<Device>> getAllConnectedDevices() async => devices;
+  Future<List<FakeDevice>> getAllConnectedDevices() async => devices;
 
   @override
   Future<List<String>> getDeviceDiagnostics() async => diagnostics;

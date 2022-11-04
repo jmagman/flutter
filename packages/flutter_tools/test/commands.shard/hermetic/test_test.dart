@@ -388,7 +388,7 @@ dev_dependencies:
   }, overrides: <Type, Generator>{
     FileSystem: () => fs,
     ProcessManager: () => FakeProcessManager.any(),
-    DeviceManager: () => _FakeDeviceManager(<Device>[
+    DeviceManager: () => _FakeDeviceManager(<FakeDevice>[
       FakeDevice('ephemeral', 'ephemeral', type: PlatformType.android),
     ]),
   });

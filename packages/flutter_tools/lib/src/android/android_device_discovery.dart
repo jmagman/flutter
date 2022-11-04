@@ -24,7 +24,7 @@ import 'android_workflow.dart';
 ///
 /// See also:
 ///   * [AndroidDevice], the type of discovered device.
-class AndroidDevices extends PollingDeviceDiscovery {
+class AndroidDevices extends PollingDeviceDiscovery<AndroidDevice> {
   AndroidDevices({
     required AndroidWorkflow androidWorkflow,
     required ProcessManager processManager,
@@ -62,7 +62,7 @@ class AndroidDevices extends PollingDeviceDiscovery {
   bool get canListAnything => _androidWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<AndroidDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (_doesNotHaveAdb()) {
       return <AndroidDevice>[];
     }

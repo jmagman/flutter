@@ -64,9 +64,9 @@ void main() {
     fileSystem.file('pubspec.yaml').createSync();
     fileSystem.directory('drive_screenshots').createSync();
 
-    final Device screenshotDevice = ThrowingScreenshotDevice()
+    final ScreenshotDevice screenshotDevice = ThrowingScreenshotDevice()
       ..supportsScreenshot = false;
-    fakeDeviceManager.devices = <Device>[screenshotDevice];
+    fakeDeviceManager.devices = <ScreenshotDevice>[screenshotDevice];
 
     await expectLater(() => createTestCommandRunner(command).run(
       <String>[
@@ -430,7 +430,7 @@ class ThrowingScreenshotDevice extends ScreenshotDevice {
 // Unfortunately Device, despite not being immutable, has an `operator ==`.
 // Until we fix that, we have to also ignore related lints here.
 // ignore: avoid_implementing_value_types
-class ScreenshotDevice extends Fake implements Device {
+class ScreenshotDevice extends Fake implements Device<ApplicationPackage> {
   final List<File> screenshots = <File>[];
 
   final Completer<void> _firstScreenshotCompleter = Completer<void>();

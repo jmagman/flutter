@@ -33,7 +33,7 @@ BundleBuilder _defaultBundleBuilder() {
 /// This could be used to support debug local development without plugins on machines that
 /// have not completed the SDK setup. These features are not fully implemented and the
 /// device is not currently discoverable.
-class PreviewDevice extends Device {
+class PreviewDevice extends Device<ApplicationPackage> {
   PreviewDevice({
     required Platform platform,
     required ProcessManager processManager,

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:vm_service/vm_service.dart';
 
 import '../android/android_device.dart';
+import '../application_package.dart';
 import '../artifacts.dart';
 import '../base/common.dart';
 import '../base/context.dart';
@@ -233,7 +234,7 @@ known, it can be explicitly provided to attach via the command-line, e.g.
     }
 
     if (userIdentifier != null) {
-      final Device? device = await findTargetDevice();
+      final Device<ApplicationPackage>? device = await findTargetDevice();
       if (device is! AndroidDevice) {
         throwToolExit('--${FlutterOptions.kDeviceUser} is only supported for Android');
       }
@@ -244,7 +245,7 @@ known, it can be explicitly provided to attach via the command-line, e.g.
   Future<FlutterCommandResult> runCommand() async {
     await _validateArguments();
 
-    final Device? device = await findTargetDevice();
+    final Device<ApplicationPackage>? device = await findTargetDevice();
 
     if (device == null) {
       throwToolExit('Did not find any valid target devices.');
@@ -261,7 +262,7 @@ known, it can be explicitly provided to attach via the command-line, e.g.
     return FlutterCommandResult.success();
   }
 
-  Future<void> _attachToDevice(Device device) async {
+  Future<void> _attachToDevice(Device<ApplicationPackage> device) async {
     final FlutterProject flutterProject = FlutterProject.current();
 
     final Daemon? daemon = boolArgDeprecated('machine')
@@ -435,7 +436,7 @@ known, it can be explicitly provided to attach via the command-line, e.g.
 
   Future<ResidentRunner> createResidentRunner({
     required Stream<Uri> observatoryUris,
-    required Device device,
+    required Device<ApplicationPackage> device,
     required FlutterProject flutterProject,
     required bool usesIpv6,
   }) async {

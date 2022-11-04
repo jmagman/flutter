@@ -52,7 +52,7 @@ const Map<String, HardwareType> kKnownHardware = <String, HardwareType>{
 /// this is a best effort process and not a guarantee; certain physical devices
 /// identify as emulators. These device identifiers may be added to the [kKnownHardware]
 /// map to specify that they are actually physical devices.
-class AndroidDevice extends Device {
+class AndroidDevice extends Device<AndroidApk> {
   AndroidDevice(
     super.id, {
     this.productID,
@@ -366,7 +366,7 @@ class AndroidDevice extends Device {
 
   @override
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    AndroidApk app, {
     String? userIdentifier,
   }) async {
     // This call takes 400ms - 600ms.
@@ -720,7 +720,7 @@ class AndroidDevice extends Device {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    AndroidApk? app, {
     String? userIdentifier,
   }) async {
     if (app == null) {
@@ -766,7 +766,7 @@ class AndroidDevice extends Device {
 
   @override
   FutureOr<DeviceLogReader> getLogReader({
-    ApplicationPackage? app,
+    AndroidApk? app,
     bool includePastLogs = false,
   }) async {
     // The Android log reader isn't app-specific. The `app` parameter isn't used.

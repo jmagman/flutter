@@ -465,7 +465,7 @@ class CustomDeviceAppSession {
 /// A device that uses user-configured actions for the common device methods.
 /// The exact actions are defined by the contents of the [CustomDeviceConfig]
 /// used to construct it.
-class CustomDevice extends Device {
+class CustomDevice extends Device<ApplicationPackage> {
   CustomDevice({
     required CustomDeviceConfig config,
     required Logger logger,
@@ -846,7 +846,7 @@ class CustomDevice extends Device {
 
 /// A [PollingDeviceDiscovery] that'll try to ping all enabled devices in the argument
 /// [CustomDevicesConfig] and report the ones that were actually reachable.
-class CustomDevices extends PollingDeviceDiscovery {
+class CustomDevices extends PollingDeviceDiscovery<CustomDevice> {
   /// Create a custom device discovery that pings all enabled devices in the
   /// given [CustomDevicesConfig].
   CustomDevices({
@@ -888,9 +888,9 @@ class CustomDevices extends PollingDeviceDiscovery {
   }
 
   @override
-  Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
+  Future<List<CustomDevice>> pollingGetDevices({Duration? timeout}) async {
     if (!canListAnything) {
-      return const <Device>[];
+      return const <CustomDevice>[];
     }
 
     final List<CustomDevice> devices = _enabledCustomDevices;

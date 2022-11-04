@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:file/memory.dart';
+import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/platform.dart';
@@ -170,7 +171,7 @@ class FakeFlutterDevice extends Fake implements FlutterDevice {
 // Unfortunately Device, despite not being immutable, has an `operator ==`.
 // Until we fix that, we have to also ignore related lints here.
 // ignore: avoid_implementing_value_types
-class FakeDevice extends Fake implements Device {
+class FakeDevice extends Fake implements Device<ApplicationPackage> {
   @override
   bool isSupported() => true;
 

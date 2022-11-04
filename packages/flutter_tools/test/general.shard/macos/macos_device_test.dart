@@ -158,7 +158,7 @@ void main() {
     );
 
     // Timeout ignored.
-    final List<Device> devices = await macOSDevices.discoverDevices(timeout: const Duration(seconds: 10));
+    final List<MacOSDevice> devices = await macOSDevices.discoverDevices(timeout: const Duration(seconds: 10));
 
     expect(devices, hasLength(1));
   });

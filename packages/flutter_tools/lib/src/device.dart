@@ -77,7 +77,7 @@ class PlatformType {
 }
 
 /// A discovery mechanism for flutter-supported development devices.
-abstract class DeviceManager {
+abstract class DeviceManager<T extends Device<ApplicationPackage>> {
   DeviceManager({
     required Logger logger,
   }) : _logger = logger;
@@ -86,7 +86,7 @@ abstract class DeviceManager {
 
   /// Constructing DeviceManagers is cheap; they only do expensive work if some
   /// of their methods are called.
-  List<DeviceDiscovery> get deviceDiscoverers;
+  List<DeviceDiscovery<T>> get deviceDiscoverers;
 
   String? _specifiedDeviceId;
 
@@ -109,12 +109,12 @@ abstract class DeviceManager {
   /// specifiedDeviceId = 'all'.
   bool get hasSpecifiedAllDevices => _specifiedDeviceId == 'all';
 
-  Future<List<Device>> getDevicesById(String deviceId) async {
+  Future<List<T>> getDevicesById(String deviceId) async {
     final String lowerDeviceId = deviceId.toLowerCase();
-    bool exactlyMatchesDeviceId(Device device) =>
+    bool exactlyMatchesDeviceId(T device) =>
         device.id.toLowerCase() == lowerDeviceId ||
         device.name.toLowerCase() == lowerDeviceId;
-    bool startsWithDeviceId(Device device) =>
+    bool startsWithDeviceId(T device) =>
         device.id.toLowerCase().startsWith(lowerDeviceId) ||
         device.name.toLowerCase().startsWith(lowerDeviceId);
 
@@ -122,21 +122,21 @@ abstract class DeviceManager {
     // shell out to other processes and can take longer.
     // If an ID was specified, first check if it was a "well-known" device id.
     final Set<String> wellKnownIds = _platformDiscoverers
-      .expand((DeviceDiscovery discovery) => discovery.wellKnownIds)
+      .expand((DeviceDiscovery<T> discovery) => discovery.wellKnownIds)
       .toSet();
     final bool hasWellKnownId = hasSpecifiedDeviceId && wellKnownIds.contains(specifiedDeviceId);
 
     // Process discoverers as they can return results, so if an exact match is
     // found quickly, we don't wait for all the discoverers to complete.
-    final List<Device> prefixMatches = <Device>[];
-    final Completer<Device> exactMatchCompleter = Completer<Device>();
-    final List<Future<List<Device>?>> futureDevices = <Future<List<Device>?>>[
-      for (final DeviceDiscovery discoverer in _platformDiscoverers)
+    final List<T> prefixMatches = <T>[];
+    final Completer<T> exactMatchCompleter = Completer<T>();
+    final List<Future<List<T>?>> futureDevices = <Future<List<T>?>>[
+      for (final DeviceDiscovery<T> discoverer in _platformDiscoverers)
         if (!hasWellKnownId || discoverer.wellKnownIds.contains(specifiedDeviceId))
           discoverer
           .devices
-          .then((List<Device> devices) {
-            for (final Device device in devices) {
+          .then((List<T> devices) {
+            for (final T device in devices) {
               if (exactlyMatchesDeviceId(device)) {
                 exactMatchCompleter.complete(device);
                 return null;
@@ -155,17 +155,17 @@ abstract class DeviceManager {
     // Wait for an exact match, or for all discoverers to return results.
     await Future.any<Object>(<Future<Object>>[
       exactMatchCompleter.future,
-      Future.wait<List<Device>?>(futureDevices),
+      Future.wait<List<T>?>(futureDevices),
     ]);
 
     if (exactMatchCompleter.isCompleted) {
-      return <Device>[await exactMatchCompleter.future];
+      return <T>[await exactMatchCompleter.future];
     }
     return prefixMatches;
   }
 
   /// Returns the list of connected devices, filtered by any user-specified device id.
-  Future<List<Device>> getDevices() {
+  Future<List<T>> getDevices() {
     final String? id = specifiedDeviceId;
     if (id == null) {
       return getAllConnectedDevices();
@@ -173,39 +173,39 @@ abstract class DeviceManager {
     return getDevicesById(id);
   }
 
-  Iterable<DeviceDiscovery> get _platformDiscoverers {
-    return deviceDiscoverers.where((DeviceDiscovery discoverer) => discoverer.supportsPlatform);
+  Iterable<DeviceDiscovery<T>> get _platformDiscoverers {
+    return deviceDiscoverers.where((DeviceDiscovery<T> discoverer) => discoverer.supportsPlatform);
   }
 
   /// Returns the list of all connected devices.
-  Future<List<Device>> getAllConnectedDevices() async {
-    final List<List<Device>> devices = await Future.wait<List<Device>>(<Future<List<Device>>>[
-      for (final DeviceDiscovery discoverer in _platformDiscoverers)
+  Future<List<T>> getAllConnectedDevices() async {
+    final List<List<T>> devices = await Future.wait<List<T>>(<Future<List<T>>>[
+      for (final DeviceDiscovery<T> discoverer in _platformDiscoverers)
         discoverer.devices,
     ]);
 
-    return devices.expand<Device>((List<Device> deviceList) => deviceList).toList();
+    return devices.expand<T>((List<T> deviceList) => deviceList).toList();
   }
 
   /// Returns the list of all connected devices. Discards existing cache of devices.
-  Future<List<Device>> refreshAllConnectedDevices({ Duration? timeout }) async {
-    final List<List<Device>> devices = await Future.wait<List<Device>>(<Future<List<Device>>>[
-      for (final DeviceDiscovery discoverer in _platformDiscoverers)
+  Future<List<T>> refreshAllConnectedDevices({ Duration? timeout }) async {
+    final List<List<T>> devices = await Future.wait<List<T>>(<Future<List<T>>>[
+      for (final DeviceDiscovery<T> discoverer in _platformDiscoverers)
         discoverer.discoverDevices(timeout: timeout),
     ]);
 
-    return devices.expand<Device>((List<Device> deviceList) => deviceList).toList();
+    return devices.expand<T>((List<T> deviceList) => deviceList).toList();
   }
 
   /// Whether we're capable of listing any devices given the current environment configuration.
   bool get canListAnything {
-    return _platformDiscoverers.any((DeviceDiscovery discoverer) => discoverer.canListAnything);
+    return _platformDiscoverers.any((DeviceDiscovery<T> discoverer) => discoverer.canListAnything);
   }
 
   /// Get diagnostics about issues with any connected devices.
   Future<List<String>> getDeviceDiagnostics() async {
     return <String>[
-      for (final DeviceDiscovery discoverer in _platformDiscoverers)
+      for (final DeviceDiscovery<T> discoverer in _platformDiscoverers)
         ...await discoverer.getDiagnostics(),
     ];
   }
@@ -232,7 +232,7 @@ abstract class DeviceManager {
   /// * If [promptUserToChooseDevice] is true, and there are more than one
   /// device after the aforementioned filters, and the user is connected to a
   /// terminal, then show a prompt asking the user to choose one.
-  Future<List<Device>> findTargetDevices(
+  Future<List<T>> findTargetDevices(
     FlutterProject? flutterProject, {
     Duration? timeout,
   }) async {
@@ -241,8 +241,8 @@ abstract class DeviceManager {
       await refreshAllConnectedDevices(timeout: timeout);
     }
 
-    List<Device> devices = (await getDevices())
-        .where((Device device) => device.isSupported()).toList();
+    List<T> devices = (await getDevices())
+        .where((T device) => device.isSupported()).toList();
 
     if (hasSpecifiedAllDevices) {
       // User has specified `--device all`.
@@ -251,8 +251,8 @@ abstract class DeviceManager {
       // currently requires devices to share a frontend_server and resident
       // runner instance. Both web and fuchsia require differently configured
       // compilers, and web requires an entirely different resident runner.
-      devices = <Device>[
-        for (final Device device in devices)
+      devices = <T>[
+        for (final T device in devices)
           if (await device.targetPlatform != TargetPlatform.fuchsia_arm64 &&
               await device.targetPlatform != TargetPlatform.fuchsia_x64 &&
               await device.targetPlatform != TargetPlatform.web_javascript &&
@@ -265,8 +265,8 @@ abstract class DeviceManager {
       // Remove all devices which are not supported by the current application.
       // For example, if there was no 'android' folder then don't attempt to
       // launch with an Android device.
-      devices = <Device>[
-        for (final Device device in devices)
+      devices = <T>[
+        for (final T device in devices)
           if (isDeviceSupportedForProject(device, flutterProject))
             device,
       ];
@@ -279,8 +279,8 @@ abstract class DeviceManager {
 
         // Note: ephemeral is nullable for device types where this is not well
         // defined.
-        final List<Device> ephemeralDevices = <Device>[
-          for (final Device device in devices)
+        final List<T> ephemeralDevices = <T>[
+          for (final T device in devices)
             if (device.ephemeral == true)
               device,
         ];
@@ -308,7 +308,7 @@ abstract class DeviceManager {
 
 
 /// An abstract class to discover and enumerate a specific type of devices.
-abstract class DeviceDiscovery {
+abstract class DeviceDiscovery<T extends Device<ApplicationPackage>> {
   bool get supportsPlatform;
 
   /// Whether this device discovery is capable of listing any devices given the
@@ -316,10 +316,10 @@ abstract class DeviceDiscovery {
   bool get canListAnything;
 
   /// Return all connected devices, cached on subsequent calls.
-  Future<List<Device>> get devices;
+  Future<List<T>> get devices;
 
   /// Return all connected devices. Discards existing cache of devices.
-  Future<List<Device>> discoverDevices({ Duration? timeout });
+  Future<List<T>> discoverDevices({ Duration? timeout });
 
   /// Gets a list of diagnostic messages pertaining to issues with any connected
   /// devices (will be an empty list if there are no issues).
@@ -337,7 +337,7 @@ abstract class DeviceDiscovery {
 
 /// A [DeviceDiscovery] implementation that uses polling to discover device adds
 /// and removals.
-abstract class PollingDeviceDiscovery extends DeviceDiscovery {
+abstract class PollingDeviceDiscovery<T extends Device<ApplicationPackage>> extends DeviceDiscovery {
   PollingDeviceDiscovery(this.name);
 
   static const Duration _pollingInterval = Duration(seconds: 4);
@@ -347,15 +347,15 @@ abstract class PollingDeviceDiscovery extends DeviceDiscovery {
 
   @protected
   @visibleForTesting
-  ItemListNotifier<Device>? deviceNotifier;
+  ItemListNotifier<T>? deviceNotifier;
 
   Timer? _timer;
 
-  Future<List<Device>> pollingGetDevices({ Duration? timeout });
+  Future<List<T>> pollingGetDevices({ Duration? timeout });
 
   void startPolling() {
     if (_timer == null) {
-      deviceNotifier ??= ItemListNotifier<Device>();
+      deviceNotifier ??= ItemListNotifier<T>();
       // Make initial population the default, fast polling timeout.
       _timer = _initTimer(null);
     }
@@ -364,7 +364,7 @@ abstract class PollingDeviceDiscovery extends DeviceDiscovery {
   Timer _initTimer(Duration? pollingTimeout) {
     return Timer(_pollingInterval, () async {
       try {
-        final List<Device> devices = await pollingGetDevices(timeout: pollingTimeout);
+        final List<T> devices = await pollingGetDevices(timeout: pollingTimeout);
         deviceNotifier!.updateWithNewList(devices);
       } on TimeoutException {
         // Do nothing on a timeout.
@@ -380,28 +380,28 @@ abstract class PollingDeviceDiscovery extends DeviceDiscovery {
   }
 
   @override
-  Future<List<Device>> get devices {
+  Future<List<T>> get devices {
     return _populateDevices();
   }
 
   @override
-  Future<List<Device>> discoverDevices({ Duration? timeout }) {
+  Future<List<T>> discoverDevices({ Duration? timeout }) {
     deviceNotifier = null;
     return _populateDevices(timeout: timeout);
   }
 
-  Future<List<Device>> _populateDevices({ Duration? timeout }) async {
-    deviceNotifier ??= ItemListNotifier<Device>.from(await pollingGetDevices(timeout: timeout));
+  Future<List<T>> _populateDevices({ Duration? timeout }) async {
+    deviceNotifier ??= ItemListNotifier<T>.from(await pollingGetDevices(timeout: timeout));
     return deviceNotifier!.items;
   }
 
-  Stream<Device> get onAdded {
-    deviceNotifier ??= ItemListNotifier<Device>();
+  Stream<T> get onAdded {
+    deviceNotifier ??= ItemListNotifier<T>();
     return deviceNotifier!.onAdded;
   }
 
-  Stream<Device> get onRemoved {
-    deviceNotifier ??= ItemListNotifier<Device>();
+  Stream<T> get onRemoved {
+    deviceNotifier ??= ItemListNotifier<T>();
     return deviceNotifier!.onRemoved;
   }
 
@@ -415,7 +415,7 @@ abstract class PollingDeviceDiscovery extends DeviceDiscovery {
 ///
 /// This may correspond to a connected iOS or Android device, or represent
 /// the host operating system in the case of Flutter Desktop.
-abstract class Device {
+abstract class Device<T extends ApplicationPackage> {
   Device(this.id, {
     required this.category,
     required this.platformType,
@@ -470,18 +470,18 @@ abstract class Device {
   ///
   /// Specify [userIdentifier] to check if installed for a particular user (Android only).
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   });
 
   /// Check if the latest build of the [app] is already installed.
-  Future<bool> isLatestBuildInstalled(ApplicationPackage app);
+  Future<bool> isLatestBuildInstalled(T app);
 
   /// Install an app package on the current device.
   ///
   /// Specify [userIdentifier] to install for a particular user (Android only).
   Future<bool> installApp(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   });
 
@@ -490,7 +490,7 @@ abstract class Device {
   /// Specify [userIdentifier] to uninstall for a particular user,
   /// defaults to all users (Android only).
   Future<bool> uninstallApp(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   });
 
@@ -516,7 +516,7 @@ abstract class Device {
   /// For example, the desktop device classes can use a writer which
   /// copies the files across the local file system.
   DevFSWriter? createDevFSWriter(
-    ApplicationPackage? app,
+    T? app,
     String? userIdentifier,
   ) {
     return null;
@@ -531,7 +531,7 @@ abstract class Device {
   /// reader will also include log messages from before the invocation time.
   /// Defaults to false.
   FutureOr<DeviceLogReader> getLogReader({
-    ApplicationPackage? app,
+    T? app,
     bool includePastLogs = false,
   });
 
@@ -583,7 +583,7 @@ abstract class Device {
   ///
   /// Specify [userIdentifier] to stop app installed to a profile (Android only).
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    T? app, {
     String? userIdentifier,
   });
 
@@ -616,7 +616,7 @@ abstract class Device {
   @override
   String toString() => name;
 
-  static Future<List<String>> descriptions(List<Device> devices) async {
+  static Future<List<String>> descriptions(List<Device<ApplicationPackage>> devices) async {
     if (devices.isEmpty) {
       return const <String>[];
     }

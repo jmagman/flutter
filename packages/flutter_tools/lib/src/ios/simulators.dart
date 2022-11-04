@@ -30,7 +30,7 @@ import 'plist_parser.dart';
 
 const String iosSimulatorId = 'apple_ios_simulator';
 
-class IOSSimulators extends PollingDeviceDiscovery {
+class IOSSimulators extends PollingDeviceDiscovery<IOSSimulator> {
   IOSSimulators({
     required IOSSimulatorUtils iosSimulatorUtils,
   }) : _iosSimulatorUtils = iosSimulatorUtils,
@@ -45,7 +45,7 @@ class IOSSimulators extends PollingDeviceDiscovery {
   bool get canListAnything => globals.iosWorkflow?.canListDevices ?? false;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async => _iosSimulatorUtils.getAttachedDevices();
+  Future<List<IOSSimulator>> pollingGetDevices({ Duration? timeout }) async => _iosSimulatorUtils.getAttachedDevices();
 
   @override
   List<String> get wellKnownIds => const <String>[];
@@ -306,7 +306,7 @@ class BootedSimDevice {
   String? get udid => data['udid']?.toString();
 }
 
-class IOSSimulator extends Device {
+class IOSSimulator extends Device<IOSApp> {
   IOSSimulator(
     super.id, {
       required this.name,
@@ -327,7 +327,7 @@ class IOSSimulator extends Device {
   final SimControl _simControl;
 
   @override
-  DevFSWriter createDevFSWriter(ApplicationPackage? app, String? userIdentifier) {
+  DevFSWriter createDevFSWriter(IOSApp? app, String? userIdentifier) {
     return LocalDevFSWriter(fileSystem: globals.fs);
   }
 
@@ -354,14 +354,14 @@ class IOSSimulator extends Device {
 
   @override
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    IOSApp app, {
     String? userIdentifier,
   }) {
     return _simControl.isInstalled(id, app.id);
   }
 
   @override
-  Future<bool> isLatestBuildInstalled(ApplicationPackage app) async => false;
+  Future<bool> isLatestBuildInstalled(IOSApp app) async => false;
 
   @override
   Future<bool> installApp(
@@ -378,7 +378,7 @@ class IOSSimulator extends Device {
 
   @override
   Future<bool> uninstallApp(
-    ApplicationPackage app, {
+    IOSApp app, {
     String? userIdentifier,
   }) async {
     try {
@@ -551,7 +551,7 @@ class IOSSimulator extends Device {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    IOSApp? app, {
     String? userIdentifier,
   }) async {
     if (app == null) {

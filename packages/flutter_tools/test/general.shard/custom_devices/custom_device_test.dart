@@ -166,7 +166,7 @@ void main() {
         directory: dir,
         logger: BufferLogger.test()
       )
-    ).devices, <Device>[]);
+    ).devices, <CustomDevice>[]);
   });
 
   testWithoutContext('CustomDevice: no devices listed if custom devices feature flag disabled', () async {

@@ -77,9 +77,9 @@ void main() {
 
       final ProxiedDevices proxiedDevices = ProxiedDevices(clientDaemonConnection, logger: bufferLogger);
 
-      final List<Device> devices = await proxiedDevices.discoverDevices();
+      final List<ProxiedDevice> devices = await proxiedDevices.discoverDevices();
       expect(devices, hasLength(1));
-      final Device device = devices[0];
+      final ProxiedDevice device = devices[0];
       expect(device.id, fakeDevice.id);
       expect(device.name, 'Proxied ${fakeDevice.name}');
       expect(await device.targetPlatform, await fakeDevice.targetPlatform);

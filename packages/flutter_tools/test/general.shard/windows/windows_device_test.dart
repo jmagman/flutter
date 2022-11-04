@@ -48,7 +48,7 @@ void main() {
       logger: BufferLogger.test(),
       processManager: FakeProcessManager.any(),
       fileSystem: MemoryFileSystem.test(),
-    ).devices, <Device>[]);
+    ).devices, <WindowsDevice>[]);
   });
 
   testWithoutContext('WindowsDevices lists a devices if the workflow is supported', () async {

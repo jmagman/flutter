@@ -90,7 +90,7 @@ final FakeVmServiceRequest getVM = FakeVmServiceRequest(
 void main() {
   testWithoutContext('Exits if device fails to start', () {
     final DriverService driverService = setUpDriverService();
-    final Device device = FakeDevice(LaunchResult.failed());
+    final FakeDevice device = FakeDevice(LaunchResult.failed());
 
     expect(
       () => driverService.start(BuildInfo.profile, device, DebuggingOptions.enabled(BuildInfo.profile), true),

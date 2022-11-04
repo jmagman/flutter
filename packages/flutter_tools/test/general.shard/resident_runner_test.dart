@@ -2119,7 +2119,7 @@ flutter:
       GetSkSLMethod? getSkSLMethod,
       PrintStructuredErrorLogMethod? printStructuredErrorLogMethod,
       io.CompressionOptions? compression,
-      Device? device,
+      FakeDevice? device,
       required Logger logger,
     }) async => FakeVmServiceHost(requests: <VmServiceExpectation>[]).vmService,
   }));

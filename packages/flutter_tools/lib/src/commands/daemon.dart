@@ -486,7 +486,7 @@ class AppDomain extends Domain {
   final DebounceOperationQueue<OperationResult, OperationType> operationQueue = DebounceOperationQueue<OperationResult, OperationType>();
 
   Future<AppInstance> startApp(
-    Device device,
+    Device<ApplicationPackage> device,
     String projectDirectory,
     String target,
     String? route,
@@ -591,7 +591,7 @@ class AppDomain extends Domain {
   Future<AppInstance> launch(
     ResidentRunner runner,
     RunOrAttach runOrAttach,
-    Device device,
+    Device<ApplicationPackage> device,
     String? projectDirectory,
     bool enableHotReload,
     Directory cwd,
@@ -663,7 +663,7 @@ class AppDomain extends Domain {
     return app;
   }
 
-  bool isRestartSupported(bool enableHotReload, Device device) =>
+  bool isRestartSupported(bool enableHotReload, Device<ApplicationPackage> device) =>
       enableHotReload && device.supportsHotRestart;
 
   final int _hotReloadDebounceDurationMs = 50;
@@ -816,7 +816,7 @@ class AppDomain extends Domain {
   }
 }
 
-typedef _DeviceEventHandler = void Function(Device device);
+typedef _DeviceEventHandler = void Function(Device<ApplicationPackage> device);
 
 /// This domain lets callers list and monitor connected devices.
 ///
@@ -863,7 +863,7 @@ class DeviceDomain extends Domain {
   Future<void> _serializeDeviceEvents = Future<void>.value();
 
   _DeviceEventHandler _onDeviceEvent(String eventName) {
-    return (Device device) {
+    return (Device<ApplicationPackage> device) {
       _serializeDeviceEvents = _serializeDeviceEvents.then<void>((_) async {
         try {
           final Map<String, Object?> response = await _deviceToMap(device);
@@ -882,7 +882,7 @@ class DeviceDomain extends Domain {
   Future<List<Map<String, Object?>>> getDevices([ Map<String, Object?>? args ]) async {
     return <Map<String, Object?>>[
       for (final PollingDeviceDiscovery discoverer in _discoverers)
-        for (final Device device in await discoverer.devices)
+        for (final Device<ApplicationPackage> device in await discoverer.devices)
           await _deviceToMap(device),
     ];
   }
@@ -891,7 +891,7 @@ class DeviceDomain extends Domain {
   Future<List<Map<String, Object?>>> discoverDevices([ Map<String, Object?>? args ]) async {
     return <Map<String, Object?>>[
       for (final PollingDeviceDiscovery discoverer in _discoverers)
-        for (final Device device in await discoverer.discoverDevices())
+        for (final Device<ApplicationPackage> device in await discoverer.discoverDevices())
           await _deviceToMap(device),
     ];
   }
@@ -916,7 +916,7 @@ class DeviceDomain extends Domain {
     final int devicePort = _getIntArg(args, 'devicePort', required: true)!;
     int? hostPort = _getIntArg(args, 'hostPort');
 
-    final Device? device = await daemon.deviceDomain._getDevice(deviceId);
+    final Device<ApplicationPackage>? device = await daemon.deviceDomain._getDevice(deviceId);
     if (device == null) {
       throw DaemonException("device '$deviceId' not found");
     }
@@ -932,7 +932,7 @@ class DeviceDomain extends Domain {
     final int devicePort = _getIntArg(args, 'devicePort', required: true)!;
     final int hostPort = _getIntArg(args, 'hostPort', required: true)!;
 
-    final Device? device = await daemon.deviceDomain._getDevice(deviceId);
+    final Device<ApplicationPackage>? device = await daemon.deviceDomain._getDevice(deviceId);
     if (device == null) {
       throw DaemonException("device '$deviceId' not found");
     }
@@ -943,7 +943,7 @@ class DeviceDomain extends Domain {
   /// Returns whether a device supports runtime mode.
   Future<bool> supportsRuntimeMode(Map<String, Object?> args) async {
     final String? deviceId = _getStringArg(args, 'deviceId', required: true);
-    final Device? device = await daemon.deviceDomain._getDevice(deviceId);
+    final Device<ApplicationPackage>? device = await daemon.deviceDomain._getDevice(deviceId);
     if (device == null) {
       throw DaemonException("device '$deviceId' not found");
     }
@@ -967,7 +967,7 @@ class DeviceDomain extends Domain {
   /// Starts the log reader on the device.
   Future<String> startLogReader(Map<String, Object?> args) async {
     final String? deviceId = _getStringArg(args, 'deviceId', required: true);
-    final Device? device = await daemon.deviceDomain._getDevice(deviceId);
+    final Device<ApplicationPackage>? device = await daemon.deviceDomain._getDevice(deviceId);
     if (device == null) {
       throw DaemonException("device '$deviceId' not found");
     }

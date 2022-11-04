@@ -20,7 +20,7 @@ import 'protocol_discovery.dart';
 
 /// A partial implementation of Device for desktop-class devices to inherit
 /// from, containing implementations that are common to all desktop devices.
-abstract class DesktopDevice extends Device {
+abstract class DesktopDevice<T extends ApplicationPackage> extends Device<T> {
   DesktopDevice(super.identifier, {
       required PlatformType super.platformType,
       required super.ephemeral,
@@ -44,7 +44,7 @@ abstract class DesktopDevice extends Device {
   final DesktopLogReader _deviceLogReader = DesktopLogReader();
 
   @override
-  DevFSWriter createDevFSWriter(ApplicationPackage? app, String? userIdentifier) {
+  DevFSWriter createDevFSWriter(T? app, String? userIdentifier) {
     return LocalDevFSWriter(fileSystem: _fileSystem);
   }
 
@@ -52,20 +52,20 @@ abstract class DesktopDevice extends Device {
   // to install the application.
   @override
   Future<bool> isAppInstalled(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   }) async => true;
 
   // Since the host and target devices are the same, no work needs to be done
   // to install the application.
   @override
-  Future<bool> isLatestBuildInstalled(ApplicationPackage app) async => true;
+  Future<bool> isLatestBuildInstalled(T app) async => true;
 
   // Since the host and target devices are the same, no work needs to be done
   // to install the application.
   @override
   Future<bool> installApp(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   }) async => true;
 
@@ -73,7 +73,7 @@ abstract class DesktopDevice extends Device {
   // to uninstall the application.
   @override
   Future<bool> uninstallApp(
-    ApplicationPackage app, {
+    T app, {
     String? userIdentifier,
   }) async => true;
 
@@ -94,7 +94,7 @@ abstract class DesktopDevice extends Device {
 
   @override
   DeviceLogReader getLogReader({
-    ApplicationPackage? app,
+    T? app,
     bool includePastLogs = false,
   }) {
     assert(!includePastLogs, 'Past log reading not supported on desktop.');
@@ -178,7 +178,7 @@ abstract class DesktopDevice extends Device {
 
   @override
   Future<bool> stopApp(
-    ApplicationPackage? app, {
+    T? app, {
     String? userIdentifier,
   }) async {
     bool succeeded = true;

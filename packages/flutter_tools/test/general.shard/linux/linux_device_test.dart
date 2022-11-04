@@ -67,7 +67,7 @@ void main() {
       logger: BufferLogger.test(),
       processManager: FakeProcessManager.any(),
       operatingSystemUtils: FakeOperatingSystemUtils(),
-    ).devices, <Device>[]);
+    ).devices, <LinuxDevice>[]);
   });
 
   testWithoutContext('LinuxDevice: no devices listed if Linux feature flag disabled', () async {
@@ -78,7 +78,7 @@ void main() {
       logger: BufferLogger.test(),
       processManager: FakeProcessManager.any(),
       operatingSystemUtils: FakeOperatingSystemUtils(),
-    ).devices, <Device>[]);
+    ).devices, <LinuxDevice>[]);
   });
 
   testWithoutContext('LinuxDevice: devices', () async {
@@ -105,7 +105,7 @@ void main() {
 
   testWithoutContext('LinuxDevice: discoverDevices', () async {
     // Timeout ignored.
-    final List<Device> devices = await LinuxDevices(
+    final List<LinuxDevice> devices = await LinuxDevices(
       fileSystem: MemoryFileSystem.test(),
       platform: linux,
       featureFlags: TestFeatureFlags(isLinuxEnabled: true),

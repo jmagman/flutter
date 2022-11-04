@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:args/command_runner.dart';
+import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
@@ -45,7 +46,7 @@ void main() {
   });
 
   testUsingContext('devices can display via the --machine flag', () async {
-    deviceManager.devices = <Device>[
+    deviceManager.devices = <WebServerDevice>[
       WebServerDevice(logger: logger),
     ];
     final DevicesCommand command = DevicesCommand();
@@ -81,14 +82,14 @@ void main() {
   });
 }
 
-class FakeDeviceManager extends Fake implements DeviceManager {
-  List<Device> devices = <Device>[];
+class FakeDeviceManager extends Fake implements DeviceManager<WebServerDevice> {
+  List<WebServerDevice> devices = <WebServerDevice>[];
 
   @override
   String? specifiedDeviceId;
 
   @override
-  Future<List<Device>> refreshAllConnectedDevices({Duration? timeout}) async {
+  Future<List<WebServerDevice>> refreshAllConnectedDevices({Duration? timeout}) async {
     return devices;
   }
 }

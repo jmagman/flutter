@@ -18,7 +18,7 @@ import 'build_windows.dart';
 import 'windows_workflow.dart';
 
 /// A device that represents a desktop Windows target.
-class WindowsDevice extends DesktopDevice {
+class WindowsDevice extends DesktopDevice<WindowsApp> {
   WindowsDevice({
     required ProcessManager processManager,
     required Logger logger,
@@ -66,7 +66,7 @@ class WindowsDevice extends DesktopDevice {
   }
 }
 
-class WindowsDevices extends PollingDeviceDiscovery {
+class WindowsDevices extends PollingDeviceDiscovery<WindowsDevice> {
   WindowsDevices({
     required ProcessManager processManager,
     required Logger logger,
@@ -93,11 +93,11 @@ class WindowsDevices extends PollingDeviceDiscovery {
   bool get canListAnything => _windowsWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({ Duration? timeout }) async {
+  Future<List<WindowsDevice>> pollingGetDevices({ Duration? timeout }) async {
     if (!canListAnything) {
-      return const <Device>[];
+      return const <WindowsDevice>[];
     }
-    return <Device>[
+    return <WindowsDevice>[
       WindowsDevice(
         fileSystem: _fileSystem,
         logger: _logger,

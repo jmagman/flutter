@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import '../application_package.dart';
 import '../base/common.dart';
 import '../base/io.dart';
 import '../device.dart';
@@ -32,7 +33,7 @@ class LogsCommand extends FlutterCommand {
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async => const <DevelopmentArtifact>{};
 
-  Device? device;
+  Device<ApplicationPackage>? device;
 
   @override
   Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {

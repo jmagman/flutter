@@ -7,6 +7,7 @@ import 'dart:io' as io;
 
 import 'package:args/command_runner.dart';
 import 'package:file/memory.dart';
+import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/error_handling_io.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -683,14 +684,14 @@ void main() {
           testDeviceManager.specifiedDeviceId = 'device-id';
           testDeviceManager.addDevice(device1);
           final DummyFlutterCommand flutterCommand = DummyFlutterCommand();
-          final List<Device>? devices = await flutterCommand.findAllTargetDevices();
-          expect(devices, <Device>[device1]);
+          final List<Device<ApplicationPackage>>? devices = await flutterCommand.findAllTargetDevices();
+          expect(devices, <FakeDevice>[device1]);
         });
 
         testUsingContext('show error when no device found', () async {
           testDeviceManager.specifiedDeviceId = 'device-id';
           final DummyFlutterCommand flutterCommand = DummyFlutterCommand();
-          final List<Device>? devices = await flutterCommand.findAllTargetDevices();
+          final List<Device<ApplicationPackage>>? devices = await flutterCommand.findAllTargetDevices();
           expect(devices, null);
           expect(testLogger.statusText, contains(UserMessages().flutterNoMatchingDevice('device-id')));
         });
@@ -700,7 +701,7 @@ void main() {
           testDeviceManager.addDevice(device1);
           testDeviceManager.addDevice(device2);
           final DummyFlutterCommand flutterCommand = DummyFlutterCommand();
-          final List<Device>? devices = await flutterCommand.findAllTargetDevices();
+          final List<Device<ApplicationPackage>>? devices = await flutterCommand.findAllTargetDevices();
           expect(devices, null);
           expect(testLogger.statusText, contains(UserMessages().flutterFoundSpecifiedDevices(2, 'device-id')));
         });
@@ -711,8 +712,8 @@ void main() {
           testDeviceManager.specifiedDeviceId = 'all';
           testDeviceManager.addDevice(device1);
           final DummyFlutterCommand flutterCommand = DummyFlutterCommand();
-          final List<Device>? devices = await flutterCommand.findAllTargetDevices();
-          expect(devices, <Device>[device1]);
+          final List<Device<ApplicationPackage>>? devices = await flutterCommand.findAllTargetDevices();
+          expect(devices, <Device<ApplicationPackage>>[device1]);
         });
 
         testUsingContext('can return multiple devices', () async {
@@ -720,8 +721,8 @@ void main() {
           testDeviceManager.addDevice(device1);
           testDeviceManager.addDevice(device2);
           final DummyFlutterCommand flutterCommand = DummyFlutterCommand();
-          final List<Device>? devices = await flutterCommand.findAllTargetDevices();
-          expect(devices, <Device>[device1, device2]);
+          final List<Device<ApplicationPackage>>? devices = await flutterCommand.findAllTargetDevices();
+          expect(devices, <Device<ApplicationPackage>>[device1, device2]);
         });
 
         testUsingContext('show error when no device found', () async {

@@ -1448,15 +1448,15 @@ abstract class FlutterCommand extends Command<void> {
   /// devices and criteria entered by the user on the command line.
   /// If no device can be found that meets specified criteria,
   /// then print an error message and return null.
-  Future<List<Device>?> findAllTargetDevices({
+  Future<List<Device<ApplicationPackage>>?> findAllTargetDevices({
     bool includeUnsupportedDevices = false,
   }) async {
     if (!globals.doctor!.canLaunchAnything) {
       globals.printError(userMessages.flutterNoDevelopmentDevice);
       return null;
     }
-    final DeviceManager deviceManager = globals.deviceManager!;
-    List<Device> devices = await deviceManager.findTargetDevices(
+    final DeviceManager<Device<ApplicationPackage>> deviceManager = globals.deviceManager!;
+    List<Device<ApplicationPackage>> devices = await deviceManager.findTargetDevices(
       includeUnsupportedDevices ? null : FlutterProject.current(),
       timeout: deviceDiscoveryTimeout,
     );
@@ -1567,10 +1567,10 @@ abstract class FlutterCommand extends Command<void> {
   ///
   /// If [includeUnsupportedDevices] is true, the tool does not filter
   /// the list by the current project support list.
-  Future<Device?> findTargetDevice({
+  Future<Device<ApplicationPackage>?> findTargetDevice({
     bool includeUnsupportedDevices = false,
   }) async {
-    List<Device>? deviceList = await findAllTargetDevices(includeUnsupportedDevices: includeUnsupportedDevices);
+    List<Device<ApplicationPackage>>? deviceList = await findAllTargetDevices(includeUnsupportedDevices: includeUnsupportedDevices);
     if (deviceList == null) {
       return null;
     }

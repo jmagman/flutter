@@ -31,7 +31,7 @@ class InstallCommand extends FlutterCommand with DeviceBasedDevelopmentArtifacts
   @override
   final String category = FlutterCommandCategory.tools;
 
-  Device? device;
+  Device<ApplicationPackage>? device;
 
   bool get uninstallOnly => boolArgDeprecated('uninstall-only');
   String? get userIdentifier => stringArgDeprecated(FlutterOptions.kDeviceUser);

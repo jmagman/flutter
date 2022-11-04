@@ -64,7 +64,7 @@ abstract class DriverService {
   /// Install and launch the application for the provided [device].
   Future<void> start(
     BuildInfo buildInfo,
-    Device device,
+    Device<ApplicationPackage> device,
     DebuggingOptions debuggingOptions,
     bool ipv6, {
     File? applicationBinary,
