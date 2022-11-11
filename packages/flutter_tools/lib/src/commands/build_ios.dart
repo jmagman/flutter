@@ -334,6 +334,8 @@ abstract class _BuildIOSSubCommand extends BuildSubCommand {
 
   bool get shouldCodesign => boolArgDeprecated('codesign');
 
+  Map<String, String> get xcodeBuildSettingOverrides => <String, String>{};
+
   late final Future<BuildInfo> cachedBuildInfo = getBuildInfo();
 
   late final Future<BuildableIOSApp> buildableIOSApp = () async {

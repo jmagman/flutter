@@ -341,15 +341,17 @@ class XcodeProjectInterpreter {
 /// This allows developers to pass arbitrary build settings in without the tool needing to make a flag
 /// for or be aware of each one. This could be used to set code signing build settings in a CI
 /// environment without requiring settings changes in the Xcode project.
-List<String> environmentVariablesAsXcodeBuildSettings(Platform platform) {
+Map<String, String> environmentVariablesAsXcodeBuildSettings(Platform platform) {
   const String xcodeBuildSettingPrefix = 'FLUTTER_XCODE_';
-  return platform.environment.entries.where((MapEntry<String, String> mapEntry) {
+  final Map<String, String> environmentVariables = <String, String>{};
+  platform.environment.entries.where((MapEntry<String, String> mapEntry) {
     return mapEntry.key.startsWith(xcodeBuildSettingPrefix);
-  }).expand<String>((MapEntry<String, String> mapEntry) {
+  }).forEach((MapEntry<String, String> mapEntry) {
     // Remove FLUTTER_XCODE_ prefix from the environment variable to get the build setting.
     final String trimmedBuildSettingKey = mapEntry.key.substring(xcodeBuildSettingPrefix.length);
-    return <String>['$trimmedBuildSettingKey=${mapEntry.value}'];
-  }).toList();
+    environmentVariables[trimmedBuildSettingKey] = mapEntry.value;
+  });
+  return environmentVariables;
 }
 
 Map<String, String> parseXcodeBuildSettings(String showBuildSettingsOutput) {
