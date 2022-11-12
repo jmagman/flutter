@@ -186,6 +186,11 @@ class XcodeProjectInterpreter {
     final String? scheme = buildContext.scheme;
     final String? configuration = buildContext.configuration;
     final String? deviceId = buildContext.deviceId;
+
+    final List<String> buildSettingOverrides = buildContext.buildSettingOverrides.entries
+        .map<String>((MapEntry<String, String> variable) => '${variable.key}=${variable.value}').toList()
+        ..addAll(environmentVariablesAsXcodeBuildSettings(_platform));
+
     final List<String> showBuildSettingsCommand = <String>[
       ...xcrunCommand(),
       'xcodebuild',
@@ -210,7 +215,7 @@ class XcodeProjectInterpreter {
         'generic/platform=iOS Simulator',
       '-showBuildSettings',
       'BUILD_DIR=${_fileSystem.path.absolute(getIosBuildDirectory())}',
-      ...environmentVariablesAsXcodeBuildSettings(_platform),
+      ...buildSettingOverrides,
     ];
     try {
       // showBuildSettings is reported to occasionally timeout. Here, we give it
@@ -337,11 +342,20 @@ class XcodeProjectInterpreter {
   }
 }
 
+/// Environment variables prefixed by FLUTTER_XCODE_ formatted as "key=value"
+/// to be passed directly to xcodebuild.
+/// See [xcodeEnvironmentVariables].
+List<String> environmentVariablesAsXcodeBuildSettings(Platform platform) {
+  return xcodeEnvironmentVariables(platform).entries
+      .map<String>((MapEntry<String, String> variable) => '${variable.key}=${variable.value}')
+      .toList();
+}
+
 /// Environment variables prefixed by FLUTTER_XCODE_ will be passed as build configurations to xcodebuild.
 /// This allows developers to pass arbitrary build settings in without the tool needing to make a flag
 /// for or be aware of each one. This could be used to set code signing build settings in a CI
 /// environment without requiring settings changes in the Xcode project.
-Map<String, String> environmentVariablesAsXcodeBuildSettings(Platform platform) {
+Map<String, String> xcodeEnvironmentVariables(Platform platform) {
   const String xcodeBuildSettingPrefix = 'FLUTTER_XCODE_';
   final Map<String, String> environmentVariables = <String, String>{};
   platform.environment.entries.where((MapEntry<String, String> mapEntry) {
@@ -383,6 +397,7 @@ class XcodeProjectBuildContext {
     this.environmentType = EnvironmentType.physical,
     this.deviceId,
     this.isWatch = false,
+    this.buildSettingOverrides = const <String, String>{},
   });
 
   final String? scheme;
@@ -390,9 +405,10 @@ class XcodeProjectBuildContext {
   final EnvironmentType environmentType;
   final String? deviceId;
   final bool isWatch;
+  final Map<String, String> buildSettingOverrides;
 
   @override
-  int get hashCode => Object.hash(scheme, configuration, environmentType, deviceId);
+  int get hashCode => Object.hash(scheme, configuration, environmentType, deviceId, buildSettingOverrides);
 
   @override
   bool operator ==(Object other) {

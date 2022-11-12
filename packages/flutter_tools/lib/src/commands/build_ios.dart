@@ -74,6 +74,17 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
       },
     );
     argParser.addOption(
+      'development-team',
+      valueHelp: 'XYZ123456',
+      help: 'Apple developer account team ID. Defaults to the Team ID set in the Xcode project.',
+    );
+    argParser.addOption(
+      'signing-certificate',
+      valueHelp: 'Apple Distribution',
+      help: 'Certificate name, SHA-1 hash, or automatic selector like "Apple Distribution" or "iOS Distribution". Implies manual signing.\n'
+        'See "xcodebuild -h" for signingCertificate automatic selector values.'
+    );
+    argParser.addOption(
       'export-options-plist',
       valueHelp: 'ExportOptions.plist',
       help:
@@ -99,7 +110,18 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
   @override
   final bool configOnly = false;
 
+  @override
+  Map<String, String> get xcodeBuildSettingOverrides => <String, String>{
+    if (developmentTeam != null)
+      'DEVELOPMENT_TEAM': developmentTeam!,
+    if (signingCertificate != null)
+      'CODE_SIGN_STYLE': 'Manual',
+      'CODE_SIGNING_IDENTITY': signingCertificate!,
+  };
+
   String? get exportOptionsPlist => stringArgDeprecated('export-options-plist');
+  String? get developmentTeam => stringArgDeprecated('development-team');
+  String? get signingCertificate => stringArgDeprecated('signing-certificate');
 
   @override
   Directory _outputAppDirectory(String xcodeResultOutput) => globals.fs
@@ -114,10 +136,27 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
       if (argResults?.wasParsed('export-method') ?? false) {
         throwToolExit(
           '"--export-options-plist" is not compatible with "--export-method". Either use "--export-options-plist" and '
-          'a plist describing how the IPA should be exported by Xcode, or use "--export-method" to create a new plist.\n'
+          'a plist with the key "method" describing how the IPA should be exported by Xcode, or use "--export-method" to create a new plist.\n'
           'See "xcodebuild -h" for available exportOptionsPlist keys.'
         );
       }
+
+      if (argResults?.wasParsed('development-team') ?? false) {
+        throwToolExit(
+          '"--export-options-plist" is not compatible with "--development-team". Either use "--export-options-plist" and '
+          'a plist with the key "teamID", or use "--development-team" to create a new plist.\n'
+          'See "xcodebuild -h" for available exportOptionsPlist keys.'
+        );
+      }
+
+      if (argResults?.wasParsed('signing-certificate') ?? false) {
+        throwToolExit(
+            '"--export-options-plist" is not compatible with "--signing-certificate". Either use "--export-options-plist" and '
+                'a plist with the key "signingCertificate", or use "--signing-certificate" to create a new plist.\n'
+                'See "xcodebuild -h" for available exportOptionsPlist keys.'
+        );
+      }
+
       final FileSystemEntityType type = globals.fs.typeSync(exportOptions);
       if (type == FileSystemEntityType.notFound) {
         throwToolExit(
@@ -278,10 +317,27 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
         <key>method</key>
         <string>${stringArgDeprecated('export-method')}</string>
         <key>uploadBitcode</key>
-        <false/>
+        <false/>'''
+    );
+    if (developmentTeam != null) {
+      plistContents.write('''
+        <key>teamID</key>
+        <string>$developmentTeam</string>
+    ''');
+    }
+    if (signingCertificate != null) {
+      plistContents.write('''
+        <key>signingStyle</key>
+        <string>manual</string>
+        <key>signingCertificate</key>
+        <string>$signingCertificate</string>
+    ''');
+
+    }
+    plistContents.write('''
     </dict>
-</plist>
-''');
+    </plist>
+    ''');
 
     final File tempPlist = globals.fs.systemTempDirectory
         .createTempSync('flutter_build_ios.').childFile('ExportOptions.plist');
@@ -394,6 +450,7 @@ abstract class _BuildIOSSubCommand extends BuildSubCommand {
       configOnly: configOnly,
       buildAction: xcodeBuildAction,
       deviceID: globals.deviceManager?.specifiedDeviceId,
+      buildSettingOverrides: xcodeBuildSettingOverrides,
     );
     xcodeBuildResult = result;
 

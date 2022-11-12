@@ -325,6 +325,35 @@ void main() {
     XcodeProjectInterpreter: () => FakeXcodeProjectInterpreterWithBuildSettings(),
   });
 
+  testUsingContext('ipa build fails when --export-options-plist and --development-team are used together', () async {
+    final BuildCommand command = BuildCommand(
+      androidSdk: FakeAndroidSdk(),
+      buildSystem: TestBuildSystem.all(BuildResult(success: true)),
+      fileSystem: MemoryFileSystem.test(),
+      logger: BufferLogger.test(),
+      osUtils: FakeOperatingSystemUtils(),
+    );
+    createMinimalMockProjectFiles();
+
+    await expectToolExitLater(
+      createTestCommandRunner(command).run(<String>[
+        'build',
+        'ipa',
+        '--export-options-plist',
+        'ExportOptions.plist',
+        '--development-team',
+        'XYZ123456',
+        '--no-pub',
+      ]),
+      contains('"--export-options-plist" is not compatible with "--development-team"'),
+    );
+  }, overrides: <Type, Generator>{
+    FileSystem: () => fileSystem,
+    ProcessManager: () => FakeProcessManager.any(),
+    Platform: () => macosPlatform,
+    XcodeProjectInterpreter: () => FakeXcodeProjectInterpreterWithBuildSettings(),
+  });
+
   testUsingContext('ipa build reports when IPA fails', () async {
     final BuildCommand command = BuildCommand(
       androidSdk: FakeAndroidSdk(),

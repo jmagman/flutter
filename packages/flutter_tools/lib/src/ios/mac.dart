@@ -199,10 +199,16 @@ Future<XcodeBuildResult> buildXcodeProject({
 
   Map<String, String>? autoSigningConfigs;
 
+  final Map<String, String> xcodeBuildSettings = Map<String, String>.of(buildSettingOverrides);
+  // Prefer FLUTTER_XCODE_ environment variables as an explicit way to build settings
+  // instead of the ones derived from command flags.
+  xcodeBuildSettings.addAll(xcodeEnvironmentVariables(globals.platform));
+
   final Map<String, String> buildSettings = await app.project.buildSettingsForBuildInfo(
         buildInfo,
         environmentType: environmentType,
         deviceId: deviceID,
+        buildSettingOverrides: xcodeBuildSettings,
       ) ?? <String, String>{};
 
   if (codesign && environmentType == EnvironmentType.physical) {
@@ -233,8 +239,6 @@ Future<XcodeBuildResult> buildXcodeProject({
     '-configuration',
     configuration,
   ];
-
-  final Map<String, String> xcodeBuildSettings = Map<String, String>.of(buildSettingOverrides);
 
   if (globals.logger.isVerbose) {
     // An environment variable to be passed to xcode_backend.sh determining
@@ -314,7 +318,7 @@ Future<XcodeBuildResult> buildXcodeProject({
   if (!codesign) {
     xcodeBuildSettings.putIfAbsent('CODE_SIGNING_ALLOWED', () => 'NO');
     xcodeBuildSettings.putIfAbsent('CODE_SIGNING_REQUIRED', () => 'NO');
-    xcodeBuildSettings.putIfAbsent('CODE_SIGNING_IDENTITY', () => '');
+    xcodeBuildSettings.putIfAbsent('CODE_SIGNING_IDENTITY', () => '""');
   }
 
   Status? buildSubStatus;
@@ -353,7 +357,8 @@ Future<XcodeBuildResult> buildXcodeProject({
       // Trigger the start of the pipe -> stdout loop. Ignore exceptions.
       unawaited(listenToScriptOutputLine());
 
-      xcodeBuildSettings.putIfAbsent('SCRIPT_OUTPUT_STREAM_FILE', () => scriptOutputPipeFile.absolute.path);
+      final String scriptOutputPipeFilePath = scriptOutputPipeFile.absolute.path;
+      xcodeBuildSettings.putIfAbsent('SCRIPT_OUTPUT_STREAM_FILE', () => scriptOutputPipeFilePath);
     }
 
     buildCommands.addAll(<String>[
@@ -367,9 +372,6 @@ Future<XcodeBuildResult> buildXcodeProject({
     // e.g. `flutter build bundle`.
     xcodeBuildSettings.putIfAbsent('FLUTTER_SUPPRESS_ANALYTICS', () => 'true');
     xcodeBuildSettings.putIfAbsent('COMPILER_INDEX_STORE_ENABLE', () => 'NO');
-    // Prefer FLUTTER_XCODE_ environment variables as an explicit way to build settings
-    // instead of the ones derived from command flags.
-    xcodeBuildSettings.addAll(environmentVariablesAsXcodeBuildSettings(globals.platform));
 
     if (buildAction == XcodeBuildAction.archive) {
       buildCommands.addAll(<String>[
@@ -412,6 +414,10 @@ Future<XcodeBuildResult> buildXcodeProject({
   } finally {
     tempDir.deleteSync(recursive: true);
   }
+
+  buildCommands.addAll(xcodeBuildSettings.entries
+      .map<String>((MapEntry<String, String> setting) => '${setting.key}=${setting.value}'));
+
   if (buildResult != null && buildResult.exitCode != 0) {
     globals.printStatus('Failed to build iOS app');
     return XcodeBuildResult(
