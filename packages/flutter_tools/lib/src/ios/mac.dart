@@ -115,7 +115,6 @@ Future<XcodeBuildResult> buildXcodeProject({
   String? deviceID,
   bool configOnly = false,
   XcodeBuildAction buildAction = XcodeBuildAction.build,
-  Map<String, String> buildSettingOverrides = const <String, String>{},
 }) async {
   if (!upgradePbxProjWithFlutterAssets(app.project, globals.logger)) {
     return XcodeBuildResult(success: false);
@@ -199,16 +198,10 @@ Future<XcodeBuildResult> buildXcodeProject({
 
   Map<String, String>? autoSigningConfigs;
 
-  final Map<String, String> xcodeBuildSettings = Map<String, String>.of(buildSettingOverrides);
-  // Prefer FLUTTER_XCODE_ environment variables as an explicit way to build settings
-  // instead of the ones derived from command flags.
-  xcodeBuildSettings.addAll(xcodeEnvironmentVariables(globals.platform));
-
   final Map<String, String> buildSettings = await app.project.buildSettingsForBuildInfo(
         buildInfo,
         environmentType: environmentType,
         deviceId: deviceID,
-        buildSettingOverrides: xcodeBuildSettings,
       ) ?? <String, String>{};
 
   if (codesign && environmentType == EnvironmentType.physical) {
@@ -243,7 +236,7 @@ Future<XcodeBuildResult> buildXcodeProject({
   if (globals.logger.isVerbose) {
     // An environment variable to be passed to xcode_backend.sh determining
     // whether to echo back executed commands.
-    xcodeBuildSettings.putIfAbsent('VERBOSE_SCRIPT_LOGGING', () => 'YES');
+    buildCommands.add('VERBOSE_SCRIPT_LOGGING=YES');
   } else {
     // This will print warnings and errors only.
     buildCommands.add('-quiet');
@@ -262,11 +255,9 @@ Future<XcodeBuildResult> buildXcodeProject({
     buildCommands.addAll(<String>[
       '-workspace', workspacePath.basename,
       '-scheme', scheme,
+      if (buildAction != XcodeBuildAction.archive) // dSYM files aren't copied to the archive if BUILD_DIR is set.
+        'BUILD_DIR=${globals.fs.path.absolute(getIosBuildDirectory())}',
     ]);
-    // dSYM files aren't copied to the archive if BUILD_DIR is set.
-    if (buildAction != XcodeBuildAction.archive) {
-      xcodeBuildSettings.putIfAbsent('BUILD_DIR', () => globals.fs.path.absolute(getIosBuildDirectory()));
-    }
   }
 
   // Check if the project contains a watchOS companion app.
@@ -306,19 +297,23 @@ Future<XcodeBuildResult> buildXcodeProject({
   if (activeArch != null) {
     final String activeArchName = getNameForDarwinArch(activeArch);
     if (activeArchName != null) {
-      xcodeBuildSettings.putIfAbsent('ONLY_ACTIVE_ARCH', () => 'YES');
+      buildCommands.add('ONLY_ACTIVE_ARCH=YES');
       // Setting ARCHS to $activeArchName will break the build if a watchOS companion app exists,
       // as it cannot be build for the architecture of the Flutter app.
       if (!hasWatchCompanion) {
-        xcodeBuildSettings.putIfAbsent('ARCHS', () => activeArchName);
+        buildCommands.add('ARCHS=$activeArchName');
       }
     }
   }
 
   if (!codesign) {
-    xcodeBuildSettings.putIfAbsent('CODE_SIGNING_ALLOWED', () => 'NO');
-    xcodeBuildSettings.putIfAbsent('CODE_SIGNING_REQUIRED', () => 'NO');
-    xcodeBuildSettings.putIfAbsent('CODE_SIGNING_IDENTITY', () => '""');
+    buildCommands.addAll(
+      <String>[
+        'CODE_SIGNING_ALLOWED=NO',
+        'CODE_SIGNING_REQUIRED=NO',
+        'CODE_SIGNING_IDENTITY=""',
+      ],
+    );
   }
 
   Status? buildSubStatus;
@@ -357,8 +352,7 @@ Future<XcodeBuildResult> buildXcodeProject({
       // Trigger the start of the pipe -> stdout loop. Ignore exceptions.
       unawaited(listenToScriptOutputLine());
 
-      final String scriptOutputPipeFilePath = scriptOutputPipeFile.absolute.path;
-      xcodeBuildSettings.putIfAbsent('SCRIPT_OUTPUT_STREAM_FILE', () => scriptOutputPipeFilePath);
+      buildCommands.add('SCRIPT_OUTPUT_STREAM_FILE=${scriptOutputPipeFile.absolute.path}');
     }
 
     buildCommands.addAll(<String>[
@@ -370,8 +364,9 @@ Future<XcodeBuildResult> buildXcodeProject({
 
     // Don't log analytics for downstream Flutter commands.
     // e.g. `flutter build bundle`.
-    xcodeBuildSettings.putIfAbsent('FLUTTER_SUPPRESS_ANALYTICS', () => 'true');
-    xcodeBuildSettings.putIfAbsent('COMPILER_INDEX_STORE_ENABLE', () => 'NO');
+    buildCommands.add('FLUTTER_SUPPRESS_ANALYTICS=true');
+    buildCommands.add('COMPILER_INDEX_STORE_ENABLE=NO');
+    buildCommands.addAll(environmentVariablesAsXcodeBuildSettings(globals.platform));
 
     if (buildAction == XcodeBuildAction.archive) {
       buildCommands.addAll(<String>[
@@ -414,10 +409,6 @@ Future<XcodeBuildResult> buildXcodeProject({
   } finally {
     tempDir.deleteSync(recursive: true);
   }
-
-  buildCommands.addAll(xcodeBuildSettings.entries
-      .map<String>((MapEntry<String, String> setting) => '${setting.key}=${setting.value}'));
-
   if (buildResult != null && buildResult.exitCode != 0) {
     globals.printStatus('Failed to build iOS app');
     return XcodeBuildResult(

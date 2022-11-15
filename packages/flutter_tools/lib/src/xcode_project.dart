@@ -271,7 +271,6 @@ class IosProject extends XcodeBasedProject {
     String? deviceId,
     String? scheme,
     bool isWatch = false,
-    Map<String, String> buildSettingOverrides = const <String, String>{},
   }) async {
     if (!existsSync()) {
       return null;
@@ -298,7 +297,6 @@ class IosProject extends XcodeBasedProject {
       configuration: configuration,
       deviceId: deviceId,
       isWatch: isWatch,
-      buildSettingOverrides: buildSettingOverrides,
     );
     final Map<String, String>? currentBuildSettings = _buildSettingsByBuildContext[buildContext];
     if (currentBuildSettings == null) {

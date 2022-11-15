@@ -82,7 +82,13 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
       'signing-certificate',
       valueHelp: 'Apple Distribution',
       help: 'Certificate name, SHA-1 hash, or automatic selector like "Apple Distribution" or "iOS Distribution". Implies manual signing.\n'
-        'See "xcodebuild -h" for signingCertificate automatic selector values.'
+        'See "xcodebuild -h" for signingCertificate automatic selector values.',
+    );
+    argParser.addMultiOption(
+      'provisioning-profile',
+      valueHelp: 'com.example.MyApp=MyApp Provisioning Profile, com.example.MyAppExtension=MyApp Extension Provisioning Profile',
+      help: 'A comma-separated list of bundle identifiers mapped by = to provisioning profile name or UUID. Implies manual signing.\n'
+            'See "xcodebuild -h" for details about the provisioningProfiles dictionary keys and values.',
     );
     argParser.addOption(
       'export-options-plist',
@@ -110,18 +116,25 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
   @override
   final bool configOnly = false;
 
-  @override
-  Map<String, String> get xcodeBuildSettingOverrides => <String, String>{
-    if (developmentTeam != null)
-      'DEVELOPMENT_TEAM': developmentTeam!,
-    if (signingCertificate != null)
-      'CODE_SIGN_STYLE': 'Manual',
-      'CODE_SIGNING_IDENTITY': signingCertificate!,
-  };
-
   String? get exportOptionsPlist => stringArgDeprecated('export-options-plist');
   String? get developmentTeam => stringArgDeprecated('development-team');
   String? get signingCertificate => stringArgDeprecated('signing-certificate');
+
+  Map<String, String>? get provisioningProfiles {
+    final Map<String, String> profileToBundleId = <String, String>{};
+    final List<String> provisioningProfilesArgs = stringsArg('provisioning-profile');
+    for (String argument in provisioningProfilesArgs) {
+      argument.split('=');
+    }
+  }
+
+  // Do not codesign during the xcarchive build, instead only during IPA -exportArchive
+  // creation.
+  @override
+  bool get shouldCodesign => boolArgDeprecated('codesign') &&
+      developmentTeam == null &&
+      signingCertificate == null &&
+      provisioningProfiles == null;
 
   @override
   Directory _outputAppDirectory(String xcodeResultOutput) => globals.fs
@@ -133,29 +146,21 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
   Future<void> validateCommand() async {
     final String? exportOptions = exportOptionsPlist;
     if (exportOptions != null) {
-      if (argResults?.wasParsed('export-method') ?? false) {
-        throwToolExit(
-          '"--export-options-plist" is not compatible with "--export-method". Either use "--export-options-plist" and '
-          'a plist with the key "method" describing how the IPA should be exported by Xcode, or use "--export-method" to create a new plist.\n'
-          'See "xcodebuild -h" for available exportOptionsPlist keys.'
-        );
-      }
-
-      if (argResults?.wasParsed('development-team') ?? false) {
-        throwToolExit(
-          '"--export-options-plist" is not compatible with "--development-team". Either use "--export-options-plist" and '
-          'a plist with the key "teamID", or use "--development-team" to create a new plist.\n'
-          'See "xcodebuild -h" for available exportOptionsPlist keys.'
-        );
-      }
-
-      if (argResults?.wasParsed('signing-certificate') ?? false) {
-        throwToolExit(
-            '"--export-options-plist" is not compatible with "--signing-certificate". Either use "--export-options-plist" and '
-                'a plist with the key "signingCertificate", or use "--signing-certificate" to create a new plist.\n'
-                'See "xcodebuild -h" for available exportOptionsPlist keys.'
-        );
-      }
+      final Map<String, String> plistKeyToConflictingFlags = <String, String>{
+        'export-method': 'method',
+        'development-team': 'teamID',
+        'signing-certificate': 'signingCertificate',
+        'provisioning-profile': 'provisioningProfiles',
+      };
+      plistKeyToConflictingFlags.forEach((String conflictingFlag, String plistKey) {
+        if (argResults?.wasParsed(conflictingFlag) ?? false) {
+          throwToolExit(
+            '"--export-options-plist" is not compatible with "--$conflictingFlag". Either use "--export-options-plist" and '
+            'a plist with the key "$plistKey", or use "--$conflictingFlag" to create a new plist.\n'
+            'See "xcodebuild -h" for available exportOptionsPlist keys.'
+          );
+        }
+      });
 
       final FileSystemEntityType type = globals.fs.typeSync(exportOptions);
       if (type == FileSystemEntityType.notFound) {
@@ -215,11 +220,6 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
     // xcarchive failed or not at expected location.
     if (xcarchiveResult.exitStatus != ExitStatus.success) {
       globals.printStatus('Skipping IPA.');
-      return xcarchiveResult;
-    }
-
-    if (!shouldCodesign) {
-      globals.printStatus('Codesigning disabled with --no-codesign, skipping IPA.');
       return xcarchiveResult;
     }
 
@@ -332,6 +332,17 @@ class BuildIOSArchiveCommand extends _BuildIOSSubCommand {
         <key>signingCertificate</key>
         <string>$signingCertificate</string>
     ''');
+      if (provisioningProfile != null) {
+        plistContents.write('''
+        <key>provisioningProfiles</key>
+        <dict>
+    ''');
+        for ()
+        plistContents.write('''
+        </dict>
+    ''');
+
+      }
 
     }
     plistContents.write('''
@@ -389,8 +400,6 @@ abstract class _BuildIOSSubCommand extends BuildSubCommand {
   bool get configOnly;
 
   bool get shouldCodesign => boolArgDeprecated('codesign');
-
-  Map<String, String> get xcodeBuildSettingOverrides => <String, String>{};
 
   late final Future<BuildInfo> cachedBuildInfo = getBuildInfo();
 
@@ -450,7 +459,6 @@ abstract class _BuildIOSSubCommand extends BuildSubCommand {
       configOnly: configOnly,
       buildAction: xcodeBuildAction,
       deviceID: globals.deviceManager?.specifiedDeviceId,
-      buildSettingOverrides: xcodeBuildSettingOverrides,
     );
     xcodeBuildResult = result;
 
