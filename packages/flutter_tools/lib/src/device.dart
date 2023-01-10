@@ -315,8 +315,13 @@ abstract class DeviceDiscovery {
   /// current environment configuration.
   bool get canListAnything;
 
+  ItemListNotifier<Device> get deviceNotifier;
+
   /// Return all connected devices, cached on subsequent calls.
-  Stream<Device> get devices;
+  // Future<List<Device>> get devices async => deviceNotifier.items;
+
+  /// Return all connected devices. Discards existing cache of devices.
+  // Future<List<Device>> discoverDevices({ Duration? timeout });
 
   /// Gets a list of diagnostic messages pertaining to issues with any connected
   /// devices (will be an empty list if there are no issues).
@@ -377,25 +382,15 @@ abstract class PollingDeviceDiscovery extends DeviceDiscovery {
   }
 
   @override
-  late final Stream<Device> devices = _deviceController.stream;
-
-  late final StreamController<Device> _deviceController = StreamController<Device>.broadcast(
-    onListen: discoverDevices,
-  );
-
-  void discoverDevices() {
-    _populateDevices().then((List<Device> devices) {
-      devices.forEach(_deviceController.add);
-    });
+  Future<List<Device>> get devices {
+    return _populateDevices();
   }
 
-
-
-  // @override
-  // Future<List<Device>> discoverDevices({ Duration? timeout }) {
-  //   deviceNotifier = null;
-  //   return _populateDevices(timeout: timeout);
-  // }
+  @override
+  Future<List<Device>> discoverDevices({ Duration? timeout }) {
+    deviceNotifier = null;
+    return _populateDevices(timeout: timeout);
+  }
 
   Future<List<Device>> _populateDevices({ Duration? timeout }) async {
     deviceNotifier ??= ItemListNotifier<Device>.from(await pollingGetDevices(timeout: timeout));

@@ -54,19 +54,22 @@ class ProxiedDevices extends DeviceDiscovery {
   @override
   bool get canListAnything => true;
 
-  @override
-  late final Stream<Device> devices = _deviceController.stream;
-  late final StreamController<Device> _deviceController = StreamController<Device>.broadcast(
-    onListen: discoverDevices,
-  );
+  List<Device>? _devices;
 
-  void discoverDevices() {
-    connection.sendRequest('device.discoverDevices').then((Object? discoveredDeviceObjects) {
-      final List<Map<String, Object?>> discoveredDevices = _cast<List<dynamic>>(discoveredDeviceObjects).cast<Map<String, Object?>>();
-        for (final Map<String, Object?> device in discoveredDevices) {
-          _deviceController.add(deviceFromDaemonResult(device));
-        }
-    });
+  @override
+  Future<List<Device>> get devices async =>
+      _devices ?? await discoverDevices();
+
+  @override
+  Future<List<Device>> discoverDevices({Duration? timeout}) async {
+    final List<Map<String, Object?>> discoveredDevices = _cast<List<dynamic>>(await connection.sendRequest('device.discoverDevices')).cast<Map<String, Object?>>();
+    final List<ProxiedDevice> devices = <ProxiedDevice>[
+      for (final Map<String, Object?> device in discoveredDevices)
+        deviceFromDaemonResult(device),
+    ];
+
+    _devices = devices;
+    return devices;
   }
 
   @override

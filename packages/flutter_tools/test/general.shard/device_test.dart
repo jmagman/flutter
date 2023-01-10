@@ -373,29 +373,29 @@ void main() {
       ]);
     });
 
-    // testWithoutContext('does not refresh device cache without a timeout', () async {
-    //   final List<Device> devices = <Device>[
-    //     ephemeralOne,
-    //   ];
-    //   final MockDeviceDiscovery deviceDiscovery = MockDeviceDiscovery()
-    //     ..deviceValues = devices;
-    //
-    //   final DeviceManager deviceManager = TestDeviceManager(
-    //     <Device>[],
-    //     deviceDiscoveryOverrides: <DeviceDiscovery>[
-    //       deviceDiscovery,
-    //     ],
-    //     logger: BufferLogger.test(),
-    //   );
-    //   deviceManager.specifiedDeviceId = ephemeralOne.id;
-    //   final List<Device> filtered = await deviceManager.findTargetDevices(
-    //     FakeFlutterProject(),
-    //   );
-    //
-    //   expect(filtered.single, ephemeralOne);
-    //   expect(deviceDiscovery.devicesCalled, 1);
-    //   expect(deviceDiscovery.discoverDevicesCalled, 0);
-    // });
+    testWithoutContext('does not refresh device cache without a timeout', () async {
+      final List<Device> devices = <Device>[
+        ephemeralOne,
+      ];
+      final MockDeviceDiscovery deviceDiscovery = MockDeviceDiscovery()
+        ..deviceValues = devices;
+
+      final DeviceManager deviceManager = TestDeviceManager(
+        <Device>[],
+        deviceDiscoveryOverrides: <DeviceDiscovery>[
+          deviceDiscovery,
+        ],
+        logger: BufferLogger.test(),
+      );
+      deviceManager.specifiedDeviceId = ephemeralOne.id;
+      final List<Device> filtered = await deviceManager.findTargetDevices(
+        FakeFlutterProject(),
+      );
+
+      expect(filtered.single, ephemeralOne);
+      expect(deviceDiscovery.devicesCalled, 1);
+      expect(deviceDiscovery.discoverDevicesCalled, 0);
+    });
 
     testWithoutContext('refreshes device cache with a timeout', () async {
       final List<Device> devices = <Device>[
@@ -730,7 +730,7 @@ class TestDeviceManager extends DeviceManager {
 
 class MockDeviceDiscovery extends Fake implements DeviceDiscovery {
   int devicesCalled = 0;
-  // int discoverDevicesCalled = 0;
+  int discoverDevicesCalled = 0;
 
   @override
   bool supportsPlatform = true;
@@ -738,16 +738,16 @@ class MockDeviceDiscovery extends Fake implements DeviceDiscovery {
   List<Device> deviceValues = <Device>[];
 
   @override
-  Stream<Device> get devices {
+  Future<List<Device>> get devices async {
     devicesCalled += 1;
-    return Stream<Device>.fromIterable(deviceValues);
+    return deviceValues;
   }
 
-  // @override
-  // Future<List<Device>> discoverDevices({Duration? timeout}) async {
-  //   discoverDevicesCalled += 1;
-  //   return deviceValues;
-  // }
+  @override
+  Future<List<Device>> discoverDevices({Duration? timeout}) async {
+    discoverDevicesCalled += 1;
+    return deviceValues;
+  }
 
   @override
   List<String> get wellKnownIds => <String>[];

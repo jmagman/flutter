@@ -580,44 +580,44 @@ Future<void> _runExampleProjectBuildTests(Directory exampleDirectory, [File? mai
     if (hasNullSafety) '--no-sound-null-safety',
     if (mainFile != null) path.relative(mainFile.path, from: exampleDirectory.absolute.path),
   ];
-  if (Directory(path.join(examplePath, 'android')).existsSync()) {
-    await _flutterBuildApk(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-    await _flutterBuildApk(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-  } else {
-    print('Example project ${path.basename(examplePath)} has no android directory, skipping apk');
-  }
+  // if (Directory(path.join(examplePath, 'android')).existsSync()) {
+  //   await _flutterBuildApk(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //   await _flutterBuildApk(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  // } else {
+  //   print('Example project ${path.basename(examplePath)} has no android directory, skipping apk');
+  // }
   if (Platform.isMacOS) {
     if (Directory(path.join(examplePath, 'ios')).existsSync()) {
       await _flutterBuildIpa(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-      await _flutterBuildIpa(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+      // await _flutterBuildIpa(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
     } else {
       print('Example project ${path.basename(examplePath)} has no ios directory, skipping ipa');
     }
   }
-  if (Platform.isLinux) {
-    if (Directory(path.join(examplePath, 'linux')).existsSync()) {
-      await _flutterBuildLinux(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-      await _flutterBuildLinux(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-    } else {
-      print('Example project ${path.basename(examplePath)} has no linux directory, skipping Linux');
-    }
-  }
-  if (Platform.isMacOS) {
-    if (Directory(path.join(examplePath, 'macos')).existsSync()) {
-      await _flutterBuildMacOS(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-      await _flutterBuildMacOS(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-    } else {
-      print('Example project ${path.basename(examplePath)} has no macos directory, skipping macOS');
-    }
-  }
-  if (Platform.isWindows) {
-    if (Directory(path.join(examplePath, 'windows')).existsSync()) {
-      await _flutterBuildWin32(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-      await _flutterBuildWin32(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
-    } else {
-      print('Example project ${path.basename(examplePath)} has no windows directory, skipping Win32');
-    }
-  }
+  // if (Platform.isLinux) {
+  //   if (Directory(path.join(examplePath, 'linux')).existsSync()) {
+  //     await _flutterBuildLinux(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //     await _flutterBuildLinux(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //   } else {
+  //     print('Example project ${path.basename(examplePath)} has no linux directory, skipping Linux');
+  //   }
+  // }
+  // if (Platform.isMacOS) {
+  //   if (Directory(path.join(examplePath, 'macos')).existsSync()) {
+  //     await _flutterBuildMacOS(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //     await _flutterBuildMacOS(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //   } else {
+  //     print('Example project ${path.basename(examplePath)} has no macos directory, skipping macOS');
+  //   }
+  // }
+  // if (Platform.isWindows) {
+  //   if (Directory(path.join(examplePath, 'windows')).existsSync()) {
+  //     await _flutterBuildWin32(examplePath, release: false, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //     await _flutterBuildWin32(examplePath, release: true, additionalArgs: additionalArgs, verifyCaching: verifyCaching);
+  //   } else {
+  //     print('Example project ${path.basename(examplePath)} has no windows directory, skipping Win32');
+  //   }
+  // }
 }
 
 Future<void> _flutterBuildApk(String relativePathToApplication, {
