@@ -64,7 +64,7 @@
 		E09898DD2853DBE800064317 /* ViewFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewFactory.m; sourceTree = "<group>"; };
 		E09898DF2853DC3C00064317 /* TextFieldFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextFieldFactory.h; sourceTree = "<group>"; };
 		E09898E02853DC3C00064317 /* TextFieldFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextFieldFactory.m; sourceTree = "<group>"; };
-		E09898E62853E9F000064317 /* PlatformViewUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatformViewUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E09898E62853E9F000064317 /* PlatformViewUITests.m.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlatformViewUITests.m.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E09898E82853E9F000064317 /* PlatformViewUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlatformViewUITests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -111,7 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
-				E09898E62853E9F000064317 /* PlatformViewUITests.xctest */,
+				E09898E62853E9F000064317 /* PlatformViewUITests.m.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,9 +177,9 @@
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
 		};
-		E09898E52853E9F000064317 /* PlatformViewUITests */ = {
+		E09898E52853E9F000064317 /* PlatformViewUITests.m */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E09898EE2853E9F000064317 /* Build configuration list for PBXNativeTarget "PlatformViewUITests" */;
+			buildConfigurationList = E09898EE2853E9F000064317 /* Build configuration list for PBXNativeTarget "PlatformViewUITests.m" */;
 			buildPhases = (
 				E09898E22853E9F000064317 /* Sources */,
 				E09898E32853E9F000064317 /* Frameworks */,
@@ -190,9 +190,9 @@
 			dependencies = (
 				E09898ED2853E9F000064317 /* PBXTargetDependency */,
 			);
-			name = PlatformViewUITests;
+			name = PlatformViewUITests.m;
 			productName = PlatformViewUITests;
-			productReference = E09898E62853E9F000064317 /* PlatformViewUITests.xctest */;
+			productReference = E09898E62853E9F000064317 /* PlatformViewUITests.m.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -227,7 +227,7 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
-				E09898E52853E9F000064317 /* PlatformViewUITests */,
+				E09898E52853E9F000064317 /* PlatformViewUITests.m */,
 			);
 		};
 /* End PBXProject section */
@@ -641,7 +641,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E09898EE2853E9F000064317 /* Build configuration list for PBXNativeTarget "PlatformViewUITests" */ = {
+		E09898EE2853E9F000064317 /* Build configuration list for PBXNativeTarget "PlatformViewUITests.m" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E09898EF2853E9F000064317 /* Debug */,

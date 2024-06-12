@@ -4,9 +4,9 @@
 
 #import "ButtonFactory.h"
 
-@interface PlatformButton: NSObject<FlutterPlatformView>
+@interface PlatformButton: NSObject//<FlutterPlatformView>
 
-@property (strong, nonatomic) UIButton *button;
+@property (strong, nonatomic) NSButton *button;
 @property (assign, nonatomic) int counter;
 
 @end
@@ -18,29 +18,30 @@
   self = [super init];
   if (self) {
     _counter = 0;
-    _button = [[UIButton alloc] init];
-    [_button setTitle:@"Initial Button Title" forState:UIControlStateNormal];
-    [_button addTarget:self action:@selector(buttonTapped) forControlEvents:UIControlEventTouchUpInside];
+    _button = [NSButton buttonWithTitle:@"Initial Button Title" target:self action:@selector(buttonTapped)];
   }
   return self;
 }
 
-- (UIView *)view {
+- (NSView *)view {
   return self.button;
 }
 
 - (void)buttonTapped {
   self.counter += 1;
   NSString *title = [NSString stringWithFormat:@"Button Tapped %d", self.counter];
-  [self.button setTitle:title forState:UIControlStateNormal];
+  self.button.title = title;
 }
 
 @end
 
 @implementation ButtonFactory
-
-- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
-  return [[PlatformButton alloc] init];
+- (nonnull NSView*)createWithViewIdentifier:(int64_t)viewId arguments:(nullable id)args {
+  return [[PlatformButton alloc] init].view;
 }
+//- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
+//  return [[PlatformButton alloc] init];
+//}
+
 
 @end

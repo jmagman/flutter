@@ -42,8 +42,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E09898E52853E9F000064317"
-               BuildableName = "PlatformViewUITests.xctest"
-               BlueprintName = "PlatformViewUITests"
+               BuildableName = "PlatformViewUITests.m.xctest"
+               BlueprintName = "PlatformViewUITests.m"
                ReferencedContainer = "container:Runner.xcodeproj">
             </BuildableReference>
          </TestableReference>

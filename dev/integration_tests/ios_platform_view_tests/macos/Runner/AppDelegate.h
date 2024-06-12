@@ -5,6 +5,6 @@
 #import <FlutterMacOS/FlutterMacOS.h>
 #import <AppKit/AppKit.h>
 
-@interface AppDelegate : FlutterAppDelegate
+@interface AppDelegate : FlutterAppDelegate<FlutterPluginRegistry>
 
 @end

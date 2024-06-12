@@ -4,7 +4,7 @@
 
 #import "TextFieldFactory.h"
 
-@interface PlatformTextField: NSObject<FlutterPlatformView>
+@interface PlatformTextField: NSObject//<FlutterPlatformView>
 
 @property (strong, nonatomic) NSTextField *textField;
 
@@ -16,13 +16,13 @@
 {
   self = [super init];
   if (self) {
-    _textField = [[NSTextField alloc] init];
-    _textField.text = @"Platform Text Field";
+    _textField = [NSTextField textFieldWithString:@"Platform Text Field"];
+//    _textField.text = @"Platform Text Field";
   }
   return self;
 }
 
-- (UIView *)view {
+- (NSView *)view {
   return self.textField;
 }
 
@@ -30,8 +30,12 @@
 
 @implementation TextFieldFactory
 
-- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
-  return [[PlatformTextField alloc] init];
+- (nonnull NSView*)createWithViewIdentifier:(int64_t)viewId arguments:(nullable id)args {
+  return [[PlatformTextField alloc] init].view;
 }
+
+//- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
+//  return [[PlatformTextField alloc] init];
+//}
 
 @end

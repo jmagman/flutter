@@ -4,9 +4,9 @@
 
 #import "ViewFactory.h"
 
-@interface PlatformView: NSObject<FlutterPlatformView>
+@interface PlatformView: NSObject//<FlutterPlatformView>
 
-@property (strong, nonatomic) UIView *platformView;
+@property (strong, nonatomic) NSView *platformView;
 
 @end
 
@@ -16,13 +16,13 @@
 {
   self = [super init];
   if (self) {
-    _platformView = [[UIView alloc] init];
-    _platformView.backgroundColor = [UIColor blueColor];
+    _platformView = [[NSView alloc] init];
+//    _platformView.backgroundColor = [NSColor blueColor];
   }
   return self;
 }
 
-- (UIView *)view {
+- (NSView *)view {
   return self.platformView;
 }
 
@@ -31,8 +31,8 @@
 
 @implementation ViewFactory
 
-- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
-  return [[PlatformView alloc] init];
+- (nonnull NSView*)createWithViewIdentifier:(int64_t)viewId arguments:(nullable id)args {
+  return [[PlatformView alloc] init].view;
 }
 
 @end
