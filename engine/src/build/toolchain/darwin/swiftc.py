@@ -619,6 +619,11 @@ def main(args):
                       help='path to the iOS SDK')
 
   # Optional arguments (forwarded to the Swift compiler).
+  parser.add_argument('-warnings-as-errors',
+                      default=False,
+                      action='store_true',
+                      help='treat warnings as errors')
+
   parser.add_argument('-I',
                       action='append',
                       dest='include_dirs',
