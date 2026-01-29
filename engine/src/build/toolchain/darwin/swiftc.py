@@ -381,13 +381,14 @@ def invoke_swift_compiler(args, extras_args, build_cache_dir, output_file_map):
       args.target_triple,
       '-swift-version',
       args.swift_version,
+      '-strict-concurrency',
+      args.strict_concurrency,
       '-c',
       '-output-file-map',
       output_file_map,
       '-save-temps',
       '-no-color-diagnostics',
       '-serialize-diagnostics',
-      '-strict-concurrency=complete',
       '-emit-dependencies',
       '-emit-module',
       '-emit-module-path',
@@ -646,6 +647,10 @@ def main(args):
   parser.add_argument('-swift-version',
                       default='5',
                       help='version of the Swift language')
+
+  parser.add_argument('-strict-concurrency',
+                      default='complete',
+                      help='concurrency checking strictness')
 
   parser.add_argument(
       '-file-prefix-map',
