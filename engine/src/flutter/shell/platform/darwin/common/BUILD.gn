@@ -19,7 +19,7 @@ config("config") {
 
   # Allow use of @testable imports in debug builds and when tests are enabled.
   if ((is_ios && enable_ios_unittests) || (is_mac && enable_unittests)) {
-    swiftflags = [ "-enable-testing" ]
+    swiftflags += [ "-enable-testing" ]
   }
 }
 
@@ -38,7 +38,7 @@ config("test_config") {
     ldflags = [ "-mmacosx-version-min=$mac_testing_deployment_target" ]
   }
   cflags += [ "-F$_platform_path/Developer/Library/Frameworks" ]
-  swiftflags = [ "-F$_platform_path/Developer/Library/Frameworks" ]
+  swiftflags += [ "-F$_platform_path/Developer/Library/Frameworks" ]
   include_dirs = [ "$_platform_path/Developer/usr/lib" ]
   framework_dirs = [ "$_platform_path/Developer/Library/Frameworks" ]
   lib_dirs = [ "$_platform_path/Developer/usr/lib" ]
