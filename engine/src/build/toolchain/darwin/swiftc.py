@@ -381,11 +381,12 @@ def invoke_swift_compiler(args, extras_args, build_cache_dir, output_file_map):
       args.target_triple,
       '-swift-version',
       args.swift_version,
-      '-strict-concurrency',
-      args.strict_concurrency,
+      # -strict-concurrency must be a single string joined by an equals.
+      f'-strict-concurrency={args.strict_concurrency}',
       '-c',
       '-output-file-map',
       output_file_map,
+      '-warnings-as-errors',
       '-save-temps',
       '-no-color-diagnostics',
       '-serialize-diagnostics',
@@ -619,11 +620,6 @@ def main(args):
                       help='path to the iOS SDK')
 
   # Optional arguments (forwarded to the Swift compiler).
-  parser.add_argument('-warnings-as-errors',
-                      default=False,
-                      action='store_true',
-                      help='treat warnings as errors')
-
   parser.add_argument('-I',
                       action='append',
                       dest='include_dirs',
