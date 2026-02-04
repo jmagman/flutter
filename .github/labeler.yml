@@ -158,9 +158,14 @@ platform-android:
 platform-ios:
   - changed-files:
     - any-glob-to-any-file:
+      - engine/src/build/config/darwin/**/*
+      - engine/src/build/config/ios/**/*
+      - engine/src/build/toolchain/darwin/**/*
       - engine/src/flutter/shell/platform/darwin/common/**/*
       - engine/src/flutter/shell/platform/darwin/ios/**/*
-      - packages/flutter_tools/lib/src/ios/**/*
+      - packages/flutter_tools/**/ios/*
+      - packages/flutter_tools/**/*xcode*
+      - packages/flutter_tools/**/*ios*
 
 platform-fuchsia:
   - changed-files:
@@ -175,6 +180,10 @@ platform-linux:
 platform-macos:
   - changed-files:
     - any-glob-to-any-file:
+      - engine/src/build/config/darwin/**/*
+      - engine/src/build/config/mac/**/*
+      - engine/src/build/toolchain/darwin/**/*
+      - engine/src/flutter/shell/platform/darwin/common/**/*
       - engine/src/flutter/src/flutter/shell/platform/darwin/common/**/*
       - engine/src/flutter/shell/platform/darwin/macos/**/*
 
@@ -235,8 +244,11 @@ team-infra:
 team-ios:
   - changed-files:
     - any-glob-to-any-file:
+      - engine/src/build/config/darwin/**/*
+      - engine/src/build/config/ios/**/*
+      - engine/src/build/toolchain/darwin/**/*
       - engine/src/flutter/shell/platform/darwin/common/**/*
-      - engine/src/flutter/shell/platform/darwin/ios/framework/**/*
+      - engine/src/flutter/shell/platform/darwin/ios/**/*
       - packages/flutter_tools/**/ios/*
       - packages/flutter_tools/**/macos/*
       - packages/flutter_tools/**/*xcode*
