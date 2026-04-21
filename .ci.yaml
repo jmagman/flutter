@@ -5681,7 +5681,6 @@ targets:
     presubmit: false
     recipe: devicelab/devicelab_drone
     timeout: 60
-    bringup: true
     properties:
       task_name: new_gallery_macos_impeller__transition_perf
 
