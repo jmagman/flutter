@@ -4307,7 +4307,6 @@ targets:
     presubmit: false
     recipe: devicelab/devicelab_drone
     timeout: 60
-    bringup: true
     properties:
       task_name: platform_view_macos_impeller__start_up
 
