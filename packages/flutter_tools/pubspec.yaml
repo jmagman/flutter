@@ -53,7 +53,7 @@ dependencies:
   http_multi_server: 3.2.2
   convert: 3.1.2
   async: 2.13.1
-  unified_analytics: 8.0.14
+  unified_analytics: 8.0.15
   pubspec_parse: 1.5.0
 
   graphs: 2.3.2
@@ -127,4 +127,4 @@ dartdoc:
   # Exclude this package from the hosted API docs.
   nodoc: true
 
-# PUBSPEC CHECKSUM: kb3ib5
+# PUBSPEC CHECKSUM: 741s3g
